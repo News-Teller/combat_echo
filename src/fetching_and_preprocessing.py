@@ -30,9 +30,26 @@ def fetch(from_, to_):
     return articles
 
 
+def is_cached():
+    return True
+
+
+def load_data(from_, to_, shuffle=True):
+    if not is_cached():
+        df = fetch(from_, to_)
+
+        df.to_csv("../resources/data.csv", index=False)
+    else:
+        df = pd.read_csv("../resources/data.csv")
+
+    if shuffle:
+        df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+    return df
+
+
 def get_title_and_leading_paragraph_from_url(url):
     article = NewsPlease.from_url(url)
-    return article.title + " " + article.description
+    return article.title + " " + article.description # TODO make sure no Nones
 
 
 def _get_paragraphs(row, count=1):
@@ -40,8 +57,14 @@ def _get_paragraphs(row, count=1):
     sentences = NLP(full_text)
 
     sentences = list(sentences.sents)  # [sent for sent in sentences.sents]  # if too slow could do with regex
+
     first_sentence = str(sentences[:count])
     return first_sentence.strip()
+
+    # if len(full_text) > 150:
+    #     return full_text[:150]
+    # else:
+    #     return full_text
 
 
 def get_title_and_leading_paragraph_from_elastic(row):
@@ -53,8 +76,7 @@ def get_title_and_leading_paragraph_from_elastic(row):
     return merged
 
 
-def preprocess_important_text(row):
-    important_text = row.important_text
+def preprocess_important_text(important_text):
     important_text = important_text.lower()
 
     important_text = NLP(important_text)
@@ -64,18 +86,18 @@ def preprocess_important_text(row):
     return " ".join(lemmatized)
 
 
-def preprocessing(df, news_please=False, cache = True):
+def preprocessing(df, news_please=False, cache=True):
     print("Parsing important text...")
+
     if news_please:
         df["important_text"] = df.url.apply(get_title_and_leading_paragraph_from_url)
     else:
-
         df["important_text"] = df.apply(get_title_and_leading_paragraph_from_elastic, axis=1)
     print("Done")
 
     print("Text cleaning...")
 
-    df["cleaned_important_text"] = df.apply(preprocess_important_text, axis=1)
+    df["cleaned_important_text"] = df.important_text.apply(preprocess_important_text)
 
     print("Done")
 
@@ -84,3 +106,8 @@ def preprocessing(df, news_please=False, cache = True):
         cached.reset_index(drop=True, inplace=True)
         np.savetxt(r'../resources/cleaned.txt', cached.values, fmt="%s")
     return df
+
+
+def preprocess_target(url):
+    target = get_title_and_leading_paragraph_from_url(url)
+    return preprocess_important_text(target)

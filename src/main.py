@@ -1,31 +1,38 @@
-from fetching_and_preprocessing import fetch
 from fetching_and_preprocessing import preprocessing
-import pandas as pd
+from fetching_and_preprocessing import preprocess_target
+from fetching_and_preprocessing import load_data
+from nearest_neighbours import train_model
+from nearest_neighbours import get_nns
+import time
 
 
-def is_cached():
-    return True
+def main(url, from_, to_):
+    start = time.time()
 
+    df = load_data(from_, to_)
 
-def load_data():
-    if not is_cached():
-        # set fetching corresponding time window
-        from_ = '2021-03-05T00:00:00.000'
-        to_ = '2021-03-05T12:00:00.000'
-        # to_ = '2021-03-05T23:59:00.000'
+    target_clean = preprocess_target(url)
+    print(target_clean)
+    train = preprocessing(df)
 
-        df = fetch(from_, to_)
+    train_model(train)
 
-        df.to_csv("data.csv", index=False)
-    else:
-        df = pd.read_csv("../resources/data.csv")
+    result = get_nns(train, target_clean)
 
-    return df
+    print("Result:")
+    print(result.title)
+
+    result.drop("text", axis = 1).to_csv("../resources/result.csv", index=False)
+
+    end = time.time()
+    print("TIME ELAPSED:")
+    print(end - start)
 
 
 if __name__ == '__main__':
-    df = load_data()
+    #url = "https://www.bloomberg.com/news/articles/2021-03-08/deliveroo-kicks-off-london-ipo-bolstering-a-busy-u-k-market?srnd=premium-europe"
+    url = "https://edition.cnn.com/2021/03/07/uk/oprah-harry-meghan-interview-intl-hnk/index.html"
+    from_ = '2021-03-04T00:00:00.000'
+    to_ = '2021-03-08T14:00:00.000'
 
-    df = preprocessing(df)
-
-    df.to_csv("../resources/preprocessed.csv", index=False)
+    main(url, from_, to_)
