@@ -1,6 +1,4 @@
-import numpy as np
 import spacy
-import pandas as pd
 from newsplease import NewsPlease
 
 NLP = spacy.load("en_core_web_sm")
@@ -57,7 +55,7 @@ def clean_text(important_text):
 
 
 def get_embedding(tokens):
-    return tokens.vector
+    return tokens.vector.tolist()
 
 
 def preprocess_cached(df, cache=True):
@@ -74,7 +72,7 @@ def preprocess_cached(df, cache=True):
 
     df = filter_df(df, ("cleaned_important_text", "embedding"))
 
-    df.drop_duplicates(subset = ["cleaned_important_text"], inplace=True)
+    df.drop_duplicates(subset=["cleaned_important_text"], inplace=True)
 
     print("Done")
 
