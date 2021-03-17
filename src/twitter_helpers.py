@@ -13,6 +13,8 @@ logger = logging.getLogger()
 
 
 def process_urls(urls):
+    similar_urls = []
+
     for url_d in urls:
         url = url_d["expanded_url"]
         url_clean = preprocess_target(url)
@@ -22,10 +24,24 @@ def process_urls(urls):
 
             corpus["embedding"] = corpus.embedding.apply(eval)
 
-            result = get_most_similar(corpus, url_emb, num=10)
+            result = get_most_similar(corpus, url_emb, num=5)
 
-            print("Result:")
-            print(result.cleaned_important_text)
+            result = result.url.tolist()
+
+            similar_urls += result
+    return similar_urls
+
+
+def reply_to_user(similar_urls, api, tweet):
+    if len(similar_urls) == 0:
+        print("Hmmmm are you sure you provided a link to an article?")
+
+    else:
+        status = "Here are some articles, similar to yours: \n" + "\n".join(similar_urls)
+        api.update_status(
+            status=status,
+            in_reply_to_status_id=tweet.id,
+        )
 
 
 def check_mentions(api, since_id):
@@ -35,20 +51,11 @@ def check_mentions(api, since_id):
                                since_id=since_id).items():
         new_since_id = max(tweet.id, new_since_id)
         urls = tweet.entities["urls"]
-        process_urls(urls)
+        logger.info("Processing urls...")
+        similar_urls = process_urls(urls)
+        logger.info("Replying to user...")
+        reply_to_user(similar_urls, api, tweet)
 
-        # if tweet.in_reply_to_status_id is not None:
-        #     continue
-        # if any(keyword in tweet.text.lower() for keyword in keywords):
-        #     logger.info(f"Answering to {tweet.user.name}")
-        #
-        #     if not tweet.user.following:
-        #         tweet.user.follow()
-        #
-        #     api.update_status(
-        #         status="Please reach us via DM",
-        #         in_reply_to_status_id=tweet.id,
-        #     )
     return new_since_id
 
 
