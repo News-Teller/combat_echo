@@ -61,7 +61,7 @@ def get_embedding(tokens):
 
 
 def preprocess_cached(df, cache=True):
-    df = filter_df(df, ("text", "title"))
+    df = filter_df(df, ("url", "text", "title"))
     print("Parsing important text...")
     df["important_text"] = df.apply(get_title_and_leading_paragraph_from_elastic, axis=1)
     print("Done")
@@ -72,7 +72,7 @@ def preprocess_cached(df, cache=True):
 
     df["embedding"] = df.cleaned_important_text.apply(get_embedding)
 
-    df = filter_df(df, ("cleaned_important_text", "embedding"))
+    df = filter_df(df, ("url", "cleaned_important_text", "embedding"))
 
     df.drop_duplicates(subset=["cleaned_important_text"], inplace=True)
 
