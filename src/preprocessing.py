@@ -11,6 +11,8 @@ def filter_df(df, columns_to_keep=("text", "title")):
 
 def get_title_and_leading_paragraph_from_url(url):
     article = NewsPlease.from_url(url)
+    if article.title is None or article.description is None:
+        return None
     return article.title + " " + article.description  # TODO make sure no Nones
 
 
@@ -86,4 +88,6 @@ def preprocess_cached(df, cache=True):
 
 def preprocess_target(url):
     target = get_title_and_leading_paragraph_from_url(url)
+    if target is None:
+        return None
     return clean_text(target)
