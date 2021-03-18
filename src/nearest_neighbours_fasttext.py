@@ -9,7 +9,7 @@ def train_model(train, save_model=True):
     np.savetxt(r'../resources/train.txt', cached.values, fmt="%s")
 
     print("Training model...")
-    model = fasttext.train_unsupervised("../resources/train.txt")
+    model = fasttext.train_unsupervised("../resources/train.txt", )
     print("Done")
 
     if save_model:
