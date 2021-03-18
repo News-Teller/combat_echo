@@ -7,34 +7,54 @@ from preprocessing import preprocess_target
 from preprocessing import get_embedding
 from preprocessing import CLEANED_DATA_PATH
 from nearest_neighbours_spacy import get_most_similar
+from nearest_neighbours_bert import SimilarityTransformer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 
-def process_urls(urls):
+def process_urls_bert(url_clean):
+    transformer = SimilarityTransformer()
+
+    result = transformer.calculate_similarity_for_target(url_clean)
+
+    result = result.url.tolist()
+
+    return result
+
+
+def process_urls_spacy(url_clean):
+    url_emb = get_embedding(url_clean)
+    corpus = pd.read_csv(CLEANED_DATA_PATH)
+    corpus["embedding"] = corpus.embedding.apply(eval)
+
+    result = get_most_similar(corpus, url_emb, num=5)
+    result = result.url.tolist()
+
+    return result
+
+
+def process_urls(urls, bert=True):
     similar_urls = []
 
     for url_d in urls:
         url = url_d["expanded_url"]
         url_clean = preprocess_target(url)
         if url_clean is not None:
-            url_emb = get_embedding(url_clean)
-            corpus = pd.read_csv(CLEANED_DATA_PATH)
 
-            corpus["embedding"] = corpus.embedding.apply(eval)
-
-            result = get_most_similar(corpus, url_emb, num=5)
-
-            result = result.url.tolist()
-
+            if bert:
+                result = process_urls_bert(url_clean)
+            else:
+                result = process_urls_spacy(url_clean)
+            result.reverse()
             similar_urls += result
     return similar_urls
 
 
 def reply_to_user(similar_urls, api, tweet):
-    if not tweet.user.following:
-        tweet.user.follow()
+    if api.me().id != tweet.user.id:
+        if not tweet.user.following:
+            tweet.user.follow()
     if len(similar_urls) == 0:
         print(f"Hmmmm @{tweet.user.screen_name} are you sure you provided a link to an article?")
 
@@ -54,7 +74,7 @@ def check_mentions(api, since_id):
         new_since_id = max(tweet.id, new_since_id)
 
         if tweet.in_reply_to_status_id is not None:
-            continue #TODO figure out what this does
+            continue  # TODO figure out what this does
 
         urls = tweet.entities["urls"]
         logger.info("Processing urls...")
