@@ -39,4 +39,5 @@ class SimilarityTransformer:
     def calculate_similarity_for_target(self, target, num=5):
         self.__create_embeddings_target(str(target))
         self.__calculate_similarities()
+        self.data.drop_duplicates("cleaned_important_text", inplace = True)
         return self.data.nlargest(num, 'similarities')
