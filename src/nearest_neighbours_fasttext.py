@@ -20,8 +20,8 @@ class SimilarityFasttext:
 
     @staticmethod
     def cosine_similarity(x, y):
-        return distance.cosine(x, y)
-        # return np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
+        #return distance.cosine(x, y)
+        return np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
 
     def get_mean_embedding(self, text):
         emb = np.mean([self.model.get_word_vector(word) for word in text.split()], axis=0)
@@ -35,7 +35,9 @@ class SimilarityFasttext:
         similarities = list()
 
         for row1 in self.data.iterrows():
-            similarities.append(self.cosine_similarity(self.target_embedding, row1[1].fasttext_embedding))
+            similarity = self.cosine_similarity(self.target_embedding, row1[1].fasttext_embedding)
+            similarities.append(similarity)
         self.data["similarities"] = similarities
         self.data.drop_duplicates("similarities", inplace=True)
-        return self.data.nlargest(5, 'similarities')
+        self.data.sort_values(by='similarities', ascending=False, inplace=True)
+        return self.data.head(5)

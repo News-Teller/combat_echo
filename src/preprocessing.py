@@ -19,7 +19,9 @@ def get_title_and_leading_paragraph_from_url(url):
     article = NewsPlease.from_url(url)
     if article.title is None or article.description is None:
         return None
-    return article.title + " " + article.description  # TODO make sure no Nones
+    maintext = article.maintext
+    cleaned = get_paragraphs_nlp(maintext)
+    return article.title + " " + article.description + " " + cleaned  # TODO make sure no Nones
 
 
 def get_paragraphs_efficient(full_text, length=150):
@@ -29,18 +31,26 @@ def get_paragraphs_efficient(full_text, length=150):
         return full_text
 
 
-def get_paragraphs(row, count=1, efficient=False):
+def get_paragraphs_nlp(full_text, count=5):
+    sentences = NLP(full_text)
+
+    sentences = list(sentences.sents)
+
+    if count < len(sentences):
+        first_sentence = str(sentences[:count])
+        return first_sentence.strip()
+    else:
+        logger.info("Article too short, taking full text")
+        return str(sentences)
+
+
+def get_paragraphs(row, count=5, efficient=False):
     full_text = row.text
 
     if efficient:
         return get_paragraphs_efficient(full_text)
-
-    sentences = NLP(full_text)
-
-    sentences = list(sentences.sents)
-    first_sentence = str(sentences[:count])
-
-    return first_sentence.strip()
+    else:
+        return get_paragraphs_nlp(full_text)
 
 
 def get_title_and_leading_paragraph_from_elastic(row):
@@ -59,14 +69,15 @@ def clean_text(important_text):
 
     lemmatized = [token.lemma_ for token in important_text if not token.is_stop and not token.is_punct]
 
-    return NLP(" ".join(lemmatized))
+    return " ".join(lemmatized)
 
 
 def get_embedding(tokens):
+    tokens = NLP(tokens)
     return tokens.vector.tolist()
 
 
-def preprocess_cached(df, cache=True):
+def preprocess_cached(df, embedding=True, cache=True):
     df = filter_df(df, ("url", "text", "title"))
     logger.info("Parsing important text...")
     df["important_text"] = df.apply(get_title_and_leading_paragraph_from_elastic, axis=1)
@@ -76,9 +87,11 @@ def preprocess_cached(df, cache=True):
 
     df["cleaned_important_text"] = df.important_text.apply(clean_text)
 
-    df["embedding"] = df.cleaned_important_text.apply(get_embedding)
-
-    df = filter_df(df, ("url", "cleaned_important_text", "embedding"))
+    if embedding:
+        df["embedding"] = df.cleaned_important_text.apply(get_embedding)
+        df = filter_df(df, ("url", "cleaned_important_text", "embedding"))
+    else:
+        df = filter_df(df, ("url", "cleaned_important_text"))
 
     df.drop_duplicates("cleaned_important_text", inplace=True)
 
