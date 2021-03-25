@@ -1,7 +1,10 @@
 import pandas as pd
 from ESClient.helpers import get_articles
 from ESClient.esclient import ElasticsearchClient
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
 RAW_DATA_PATH = "../resources/raw_data.csv"
 
 
@@ -13,16 +16,16 @@ def convert_to_df(articles):
 
 
 def fetch(from_, to_, cache=False):
-    print("Starting...")
+    logger.info("Starting...")
     # create client
     es = ElasticsearchClient('10.0.0.35')
-    print("Connected")
+    logger.info("Connected")
 
     timeframe = (from_, to_)
 
-    print("Fetching articles...")
+    logger.info("Fetching articles...")
     articles = get_articles(es, timeframe)
-    print('Total articles fetched: {}'.format(len(articles)))
+    logger.info('Total articles fetched: {}'.format(len(articles)))
     articles = convert_to_df(articles)
 
     if cache:

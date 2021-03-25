@@ -1,10 +1,13 @@
 from sentence_transformers import SentenceTransformer, util
 import torch
+import logging
 
 
 class BertPreprocessor:
     __CLEANED_DATA_PATH_BERT = "../resources/cleaned_data_bert.csv"
     __EMBEDDINGS_PATH = "../resources/embeddings.pt"
+    logging.basicConfig(level=logging.INFO)
+    __logger = logging.getLogger()
 
     def __init__(self, data, model_name="stsb-roberta-large"):
         self.model = self.__load_model(model_name)
@@ -26,8 +29,8 @@ class BertPreprocessor:
             self.data["bert_embedding"] = list(torch.chunk(self.embeddings, self.embeddings.shape[0], dim=0))
 
     def calculate_embeddings_and_save(self):
-        print("Creating bert embeddings...")
+        self.__logger.info("Creating bert embeddings...")
         self.__create_embeddings()
-        print("Done")
+        self.__logger.info("Done")
         self.data.to_csv(self.__CLEANED_DATA_PATH_BERT, index=False)
         return self.data

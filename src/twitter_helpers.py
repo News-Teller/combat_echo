@@ -56,14 +56,14 @@ def reply_to_user(similar_urls, api, tweet):
         if not tweet.user.following:
             tweet.user.follow()
     if len(similar_urls) == 0:
-        print(f"Hmmmm @{tweet.user.screen_name} are you sure you provided a link to an article?")
+        status = f"Hmmmm @{tweet.user.screen_name} are you sure you provided a link to an article?"
 
     else:
         status = f"Hey @{tweet.user.screen_name} here are some articles, similar to yours: \n" + "\n".join(similar_urls)
-        api.update_status(
-            status=status,
-            in_reply_to_status_id=tweet.id,
-        )
+    api.update_status(
+        status=status,
+        in_reply_to_status_id=tweet.id,
+    )
 
 
 def check_mentions(api, since_id):

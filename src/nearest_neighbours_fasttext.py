@@ -1,43 +1,41 @@
 import fasttext
 import numpy as np
 import pandas as pd
+from scipy.spatial import distance
 
+class SimilarityFasttext:
+    CLEANED_DATA_PATH_FASTTEXT = '../resources/cleaned_data_fasttext.csv'
 
-def train_model(train, save_model=True):
-    cached = pd.DataFrame(train["cleaned_important_text"])
-    cached.reset_index(drop=True, inplace=True)
-    np.savetxt(r'../resources/train.txt', cached.values, fmt="%s")
+    def __init__(self, target):
+        self.target = target
+        self.load_model_and_data()
+        self.get_target_embedding()
 
-    print("Training model...")
-    model = fasttext.train_unsupervised("../resources/train.txt", )
-    print("Done")
+    TRAINING_DATA_PATH = '../resources/train.txt'
+    MODEL_PATH = "../resources/model.bin"
 
-    if save_model:
-        model.save_model("../resources/model.bin")
+    def load_model_and_data(self):
+        self.model = fasttext.load_model(self.MODEL_PATH)
+        self.data = pd.read_pickle(self.CLEANED_DATA_PATH_FASTTEXT)
 
+    @staticmethod
+    def cosine_similarity(x, y):
+        return distance.cosine(x, y)
+        # return np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
 
-def cosine_similarity(x, y):
-    return np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
+    def get_mean_embedding(self, text):
+        emb = np.mean([self.model.get_word_vector(word) for word in text.split()], axis=0)
+        return emb
 
+    def get_target_embedding(self):
+        # self.target_embedding = self.model.get_word_vector(str(self.target))
+        self.target_embedding = self.get_mean_embedding(str(self.target))
 
-def get_neighbours(model, data, target):
-    similarities = list()
+    def get_similarities(self):
+        similarities = list()
 
-    for row1 in data.iterrows():
-        test_sample = row1[1].cleaned_important_text
-
-        emb1 = model.get_word_vector(target)
-        emb2 = model.get_word_vector(test_sample)
-        similarities.append(cosine_similarity(emb1, emb2))
-
-    data["similarities"] = similarities
-
-    return data
-
-
-def get_nns(data, target):
-    model = fasttext.load_model("../resources/model.bin")
-
-    neighbours = get_neighbours(model, data, target)
-
-    return neighbours.nlargest(5, 'similarities')
+        for row1 in self.data.iterrows():
+            similarities.append(self.cosine_similarity(self.target_embedding, row1[1].fasttext_embedding))
+        self.data["similarities"] = similarities
+        self.data.drop_duplicates("similarities", inplace=True)
+        return self.data.nlargest(5, 'similarities')

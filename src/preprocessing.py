@@ -1,6 +1,12 @@
 import spacy
 from newsplease import NewsPlease
+import logging
+from pandas.core.common import SettingWithCopyWarning
+import warnings
 
+warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
 NLP = spacy.load("en_core_web_lg")
 CLEANED_DATA_PATH = "../resources/cleaned_data.csv"
 
@@ -62,11 +68,11 @@ def get_embedding(tokens):
 
 def preprocess_cached(df, cache=True):
     df = filter_df(df, ("url", "text", "title"))
-    print("Parsing important text...")
+    logger.info("Parsing important text...")
     df["important_text"] = df.apply(get_title_and_leading_paragraph_from_elastic, axis=1)
-    print("Done")
+    logger.info("Done")
 
-    print("Text cleaning...")
+    logger.info("Text cleaning...")
 
     df["cleaned_important_text"] = df.important_text.apply(clean_text)
 
@@ -74,15 +80,12 @@ def preprocess_cached(df, cache=True):
 
     df = filter_df(df, ("url", "cleaned_important_text", "embedding"))
 
-    df.drop_duplicates(subset=["cleaned_important_text"], inplace=True)
+    df.drop_duplicates("cleaned_important_text", inplace=True)
 
-    print("Done")
+    logger.info("Done")
 
     if cache:
         df.to_csv(CLEANED_DATA_PATH, index=False)
-        # cached = pd.DataFrame(df["cleaned_important_text"])
-        # cached.reset_index(drop=True, inplace=True)
-        # np.savetxt(r'../resources/cleaned.txt', cached.values, fmt="%s")
     return df
 
 
