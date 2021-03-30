@@ -6,8 +6,9 @@ from twitter_connector import TwitterConnector
 from preprocessing import preprocess_target
 from preprocessing import get_embedding
 from preprocessing import CLEANED_DATA_PATH
-from nearest_neighbours_spacy import get_most_similar
-from nearest_neighbours_bert import SimilarityTransformer
+from similarity_calculation_spacy import get_most_similar
+from similarity_calculation_bert import SimilarityTransformer
+from similarity_calculation_fasttext import SimilarityFasttext
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -17,6 +18,16 @@ def process_urls_bert(url_clean):
     transformer = SimilarityTransformer()
 
     result = transformer.calculate_similarity_for_target(url_clean)
+
+    result = result.url.tolist()
+
+    return result
+
+
+def process_urls_fasttext(url_clean):
+    calculator = SimilarityFasttext(url_clean)
+
+    result = calculator.get_similarities()
 
     result = result.url.tolist()
 
@@ -34,7 +45,7 @@ def process_urls_spacy(url_clean):
     return result
 
 
-def process_urls(urls, bert=True):
+def process_urls(urls, model="fasttext"):
     similar_urls = []
 
     for url_d in urls:
@@ -42,9 +53,14 @@ def process_urls(urls, bert=True):
         url_clean = preprocess_target(url)
         if url_clean is not None:
 
-            if bert:
+            if model == "fasttext":
+                logger.info("Using fasttext")
+                result = process_urls_fasttext(url_clean)
+            elif model == "bert":
+                logger.info("Using bert")
                 result = process_urls_bert(url_clean)
             else:
+                logger.info("Using spacy")
                 result = process_urls_spacy(url_clean)
             result.reverse()
             similar_urls += result
@@ -66,7 +82,7 @@ def reply_to_user(similar_urls, api, tweet):
     )
 
 
-def check_mentions(api, since_id):
+def check_mentions(api, since_id, model="fasttext"):
     logger.info("Retrieving mentions")
     new_since_id = since_id
     for tweet in tweepy.Cursor(api.mentions_timeline,
@@ -78,7 +94,7 @@ def check_mentions(api, since_id):
 
         urls = tweet.entities["urls"]
         logger.info("Processing urls...")
-        similar_urls = process_urls(urls)
+        similar_urls = process_urls(urls, model=model)
         logger.info("Replying to user...")
         try:
             reply_to_user(similar_urls, api, tweet)
@@ -102,7 +118,7 @@ def main():
     since_id = find_last_reply(api)
 
     while True:
-        since_id = check_mentions(api, since_id)
+        since_id = check_mentions(api, since_id, model="fasttext")
         logger.info("Waiting...")
         time.sleep(10)
 

@@ -1,5 +1,5 @@
 from preprocessing import preprocess_target
-from nearest_neighbours_bert import SimilarityTransformer
+from similarity_calculation_bert import SimilarityTransformer
 
 import pandas as pd
 

@@ -1,43 +1,37 @@
 from preprocessing import preprocess_target
 from preprocessing import get_embedding
 from preprocessing import CLEANED_DATA_PATH
-from nearest_neighbours_spacy import get_most_similar
+from similarity_calculation_spacy import get_most_similar
 from preprocessing_fasttext import FasttextPreprocessor
-from nearest_neighbours_fasttext import SimilarityFasttext
+from similarity_calculation_fasttext import SimilarityFasttext
 import pandas as pd
 import time
+from fetching import fetch
+from preprocessing import preprocess_cached
 
 
 def main(url):
-    # start = time.time()
+    # from_ = '2021-03-23T00:00:00.000'
+    # to_ = '2021-03-23T23:59:00.000'
+    #
+    # df = fetch(from_, to_)
+    # df = preprocess_cached(df)
+    #
+    # print(df.head())
 
     target_clean = preprocess_target(url)
-    # target_emb = get_embedding(target_clean)
-    # print(target_clean)
 
-    # corpus = pd.read_csv(CLEANED_DATA_PATH)
-    #
-    # corpus["embedding"] = corpus.embedding.apply(eval)
-    #
-    # preprocessor = FasttextPreprocessor(corpus)
-    #
-    # preprocessor.run_pipeline()
+    print(target_clean)
 
     calculator = SimilarityFasttext(target_clean)
 
     result = calculator.get_similarities()
 
-    print(result.iloc[0].url)
-
-    # result = get_most_similar(corpus, target_emb, num=10)
-    #
-    # print("Result:")
-    # print(result.cleaned_important_text.iloc[0])
-    #
-    #
-    # end = time.time()
-    # print("TIME ELAPSED:")
-    # print(end - start)
+    print(result.iloc[0].url, result.iloc[0].similarities)
+    print(result.iloc[1].url, result.iloc[1].similarities)
+    print(result.iloc[2].url, result.iloc[2].similarities)
+    print(result.iloc[3].url, result.iloc[3].similarities)
+    print(result.iloc[4].url, result.iloc[4].similarities)
 
 
 if __name__ == '__main__':
