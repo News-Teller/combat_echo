@@ -5,9 +5,15 @@ from similarity_calculation_spacy import get_most_similar
 from preprocessing_fasttext import FasttextPreprocessor
 from similarity_calculation_fasttext import SimilarityFasttext
 import pandas as pd
+import numpy as np
 import time
 from fetching import fetch
 from preprocessing import preprocess_cached
+from datetime import datetime
+
+from result_ordering import divide_by_polarity_and_subjectivity
+
+pd.set_option('display.max_columns', 500)
 
 
 def main(url):
@@ -19,7 +25,9 @@ def main(url):
     #
     # print(df.head())
 
-    target_clean = preprocess_target(url)
+    target_clean, publication_date = preprocess_target(url)
+
+    # print(publication_date)
 
     print(target_clean)
 
@@ -27,17 +35,26 @@ def main(url):
 
     result = calculator.get_similarities()
 
-    print(result.iloc[0].url, result.iloc[0].similarities)
-    print(result.iloc[1].url, result.iloc[1].similarities)
-    print(result.iloc[2].url, result.iloc[2].similarities)
-    print(result.iloc[3].url, result.iloc[3].similarities)
-    print(result.iloc[4].url, result.iloc[4].similarities)
+    output = divide_by_polarity_and_subjectivity(result, publication_date)
+
+    for k, v in output.items():
+        if len(v) == 2:
+            print(f"{k} :\n {v[0]}\n {v[1]}")
+        else:
+            print(f"{k} :\n {v[0]}")
+
+
+    # print(result.iloc[0].url, result.iloc[0].similarities)
+    # print(result.iloc[1].url, result.iloc[1].similarities)
+    # print(result.iloc[2].url, result.iloc[2].similarities)
+    # print(result.iloc[3].url, result.iloc[3].similarities)
+    # print(result.iloc[4].url, result.iloc[4].similarities)
 
 
 if __name__ == '__main__':
     # url = "https://www.bloomberg.com/news/articles/2021-03-08/deliveroo-kicks-off-london-ipo-bolstering-a-busy-u-k-market?srnd=premium-europe"
     # url = "https://edition.cnn.com/2021/03/07/uk/oprah-harry-meghan-interview-intl-hnk/index.html"
-    url = "https://www.nytimes.com/interactive/2017/11/06/opinion/how-to-reduce-shootings.html"
+    url = "https://www.nytimes.com/2021/03/31/business/economy/biden-infrastructure-plan.html"
     # from_ = '2021-03-05T00:00:00.000'
     # to_ = '2021-03-09T13:00:00.000'
 

@@ -2,6 +2,8 @@ import fasttext
 import numpy as np
 import pandas as pd
 from scipy.spatial import distance
+from datetime import datetime
+
 
 class SimilarityFasttext:
     CLEANED_DATA_PATH_FASTTEXT = '../resources/cleaned_data_fasttext.csv'
@@ -17,10 +19,12 @@ class SimilarityFasttext:
     def load_model_and_data(self):
         self.model = fasttext.load_model(self.MODEL_PATH)
         self.data = pd.read_pickle(self.CLEANED_DATA_PATH_FASTTEXT)
+        self.data["publish_datetime"] = self.data["publish_datetime"].apply(
+            lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%S.000Z'))
 
     @staticmethod
     def cosine_similarity(x, y):
-        #return distance.cosine(x, y)
+        # return distance.cosine(x, y)
         return np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
 
     def get_mean_embedding(self, text):
@@ -31,6 +35,13 @@ class SimilarityFasttext:
         # self.target_embedding = self.model.get_word_vector(str(self.target))
         self.target_embedding = self.get_mean_embedding(str(self.target))
 
+    def filter_similars(self, row, max_similarity, percent=0.01):
+        similarity = row.similarities
+        if similarity + percent * similarity >= max_similarity:
+            return row
+        else:
+            return None
+
     def get_similarities(self):
         similarities = list()
 
@@ -40,4 +51,8 @@ class SimilarityFasttext:
         self.data["similarities"] = similarities
         self.data.drop_duplicates("similarities", inplace=True)
         self.data.sort_values(by='similarities', ascending=False, inplace=True)
-        return self.data.head(5)
+
+        max_similarity = self.data.iloc[0].similarities
+        self.data = self.data.apply(lambda row: self.filter_similars(row, max_similarity), axis=1).dropna()
+
+        return self.data.head(100)

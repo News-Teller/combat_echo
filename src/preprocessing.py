@@ -21,7 +21,8 @@ def get_title_and_leading_paragraph_from_url(url):
         return None
     maintext = article.maintext
     cleaned = get_paragraphs_nlp(maintext)
-    return article.title + " " + article.description + " " + cleaned  # TODO make sure no Nones
+
+    return article.title + " " + article.description + " " + cleaned, article.date_publish
 
 
 def get_paragraphs_efficient(full_text, length=150):
@@ -78,7 +79,7 @@ def get_embedding(tokens):
 
 
 def preprocess_cached(df, embedding=True, cache=True):
-    df = filter_df(df, ("url", "text", "title"))
+    df = filter_df(df, ("url", "text", "title", "publish_datetime", "polarity", "subjectivity"))
     logger.info("Parsing important text...")
     df["important_text"] = df.apply(get_title_and_leading_paragraph_from_elastic, axis=1)
     logger.info("Done")
@@ -89,9 +90,9 @@ def preprocess_cached(df, embedding=True, cache=True):
 
     if embedding:
         df["embedding"] = df.cleaned_important_text.apply(get_embedding)
-        df = filter_df(df, ("url", "cleaned_important_text", "embedding"))
+        df = filter_df(df, ("url", "cleaned_important_text", "embedding", "publish_datetime", "polarity", "subjectivity"))
     else:
-        df = filter_df(df, ("url", "cleaned_important_text"))
+        df = filter_df(df, ("url", "cleaned_important_text", "publish_datetime", "polarity", "subjectivity"))
 
     df.drop_duplicates("cleaned_important_text", inplace=True)
 
@@ -103,7 +104,7 @@ def preprocess_cached(df, embedding=True, cache=True):
 
 
 def preprocess_target(url):
-    target = get_title_and_leading_paragraph_from_url(url)
+    target, publication_date = get_title_and_leading_paragraph_from_url(url)
     if target is None:
         return None
-    return clean_text(target)
+    return clean_text(target), publication_date
