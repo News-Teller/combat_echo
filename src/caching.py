@@ -10,8 +10,8 @@ logger = logging.getLogger()
 if __name__ == '__main__':
     logger.info("Starting caching pipeline")
 
-    from_ = '2021-03-22T00:00:00.000'
-    to_ = '2021-03-29T23:59:00.000'
+    from_ = '2021-03-29T00:00:00.000'
+    to_ = '2021-04-04T23:59:00.000'
 
     logger.info(f"Dates interval : from {from_} to {to_}")
 
