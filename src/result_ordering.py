@@ -11,7 +11,7 @@ def get_time_difference_helper(row, target_publication_date):
     return 0.9 * row.similarities + 0.1 * np.exp(-abs(diff))
 
 
-def divide_by_polarity_and_subjectivity(result, target_publication_date):
+def divide_by_polarity_and_subjectivity(result, target_publication_date, random=False):
     output = {}
 
     result["new_sims"] = result.apply(lambda x: get_time_difference_helper(x, target_publication_date),
@@ -28,18 +28,17 @@ def divide_by_polarity_and_subjectivity(result, target_publication_date):
             result["subjectivity"] == "Neutral")]
     result_subjective = result[(result["subjectivity"] == "Very subjective") | (result["subjectivity"] == "Subjective")]
 
-    print("Positive", len(result_positive))
-
-    # output["positive"] = tuple(result_positive.sample(n=2).url)
-    # output["negative"] = tuple(result_negative.sample(n=2).url)
-    # output["neutral"] = tuple(result_neutral.sample(n=2).url)
-    # output["objective"] = tuple(result_objective.sample(n=2).url)
-    # output["subjective"] = tuple(result_subjective.sample(n=2).url)
-
-    output["positive"] = tuple(result_positive.iloc[0:2].url)
-    output["negative"] = tuple(result_negative.iloc[0:2].url)
-    output["neutral"] = tuple(result_neutral.iloc[0:2].url)
-    output["objective"] = tuple(result_objective.iloc[0:2].url)
-    output["subjective"] = tuple(result_subjective.iloc[0:2].url)
+    if random:
+        output["positive"] = tuple(result_positive.sample(n=2).url)
+        output["negative"] = tuple(result_negative.sample(n=2).url)
+        output["neutral"] = tuple(result_neutral.sample(n=2).url)
+        output["objective"] = tuple(result_objective.sample(n=2).url)
+        output["subjective"] = tuple(result_subjective.sample(n=2).url)
+    else:
+        output["positive"] = tuple(result_positive.iloc[0:2].url)
+        output["negative"] = tuple(result_negative.iloc[0:2].url)
+        output["neutral"] = tuple(result_neutral.iloc[0:2].url)
+        output["objective"] = tuple(result_objective.iloc[0:2].url)
+        output["subjective"] = tuple(result_subjective.iloc[0:2].url)
 
     return output

@@ -1,6 +1,7 @@
 from sentence_transformers import SentenceTransformer, util
 import pandas as pd
 import torch
+from datetime import datetime
 
 
 class SimilarityTransformer:
@@ -34,10 +35,28 @@ class SimilarityTransformer:
         self.target_emb = self.model.encode(target, convert_to_tensor=True)
 
     def __load_data_with_embeddings(self):
-        return pd.read_csv(self.__CLEANED_DATA_PATH_BERT)
+        df = pd.read_csv(self.__CLEANED_DATA_PATH_BERT)
+        df["publish_datetime"] = df["publish_datetime"].apply(
+            lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%S.000Z'))
+        return df
+
+    def __filter_similars(self, row, max_similarity, percent=0.2):
+        similarity = row.similarities
+        if similarity + percent * similarity >= max_similarity:
+            return row
+        else:
+            return None
 
     def calculate_similarity_for_target(self, target, num=5):
         self.__create_embeddings_target(str(target))
         self.__calculate_similarities()
-        self.data.drop_duplicates("cleaned_important_text", inplace = True)
-        return self.data.nlargest(num, 'similarities')
+
+        self.data.drop_duplicates("similarities", inplace=True)
+        self.data.sort_values(by='similarities', ascending=False, inplace=True)
+
+        max_similarity = self.data.iloc[0].similarities
+        print("Before", len(self.data))
+        self.data = self.data.apply(lambda row: self.__filter_similars(row, max_similarity), axis=1).dropna()
+        print("After", len(self.data))
+
+        return self.data.head(100)

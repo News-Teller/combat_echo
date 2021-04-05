@@ -35,7 +35,7 @@ def main(url):
 
     result = calculator.get_similarities()
 
-    output = divide_by_polarity_and_subjectivity(result, publication_date)
+    output = divide_by_polarity_and_subjectivity(result, publication_date, random=True)
 
     for k, v in output.items():
         if len(v) == 2:
@@ -43,18 +43,20 @@ def main(url):
         else:
             print(f"{k} :\n {v[0]}")
 
+    print("OLD")
 
-    # print(result.iloc[0].url, result.iloc[0].similarities)
-    # print(result.iloc[1].url, result.iloc[1].similarities)
-    # print(result.iloc[2].url, result.iloc[2].similarities)
-    # print(result.iloc[3].url, result.iloc[3].similarities)
-    # print(result.iloc[4].url, result.iloc[4].similarities)
+    print(result.iloc[0].url, result.iloc[0].similarities)
+    print(result.iloc[1].url, result.iloc[1].similarities)
+    print(result.iloc[2].url, result.iloc[2].similarities)
+    print(result.iloc[3].url, result.iloc[3].similarities)
+    print(result.iloc[4].url, result.iloc[4].similarities)
 
 
 if __name__ == '__main__':
     # url = "https://www.bloomberg.com/news/articles/2021-03-08/deliveroo-kicks-off-london-ipo-bolstering-a-busy-u-k-market?srnd=premium-europe"
     # url = "https://edition.cnn.com/2021/03/07/uk/oprah-harry-meghan-interview-intl-hnk/index.html"
     url = "https://www.nytimes.com/2021/03/31/business/economy/biden-infrastructure-plan.html"
+    url = "https://www.bloomberg.com/news/articles/2021-03-18/nokia-ceo-thinks-longer-5g-cycle-gives-him-time-to-catch-up?srnd=technology-vp"
     # from_ = '2021-03-05T00:00:00.000'
     # to_ = '2021-03-09T13:00:00.000'
 

@@ -50,9 +50,8 @@ def process_urls(urls, model="fasttext"):
 
     for url_d in urls:
         url = url_d["expanded_url"]
-        url_clean = preprocess_target(url)
+        url_clean, _ = preprocess_target(url)  # TODO factor date
         if url_clean is not None:
-
             if model == "fasttext":
                 logger.info("Using fasttext")
                 result = process_urls_fasttext(url_clean)
