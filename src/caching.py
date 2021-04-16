@@ -1,4 +1,6 @@
 from fetching import fetch
+from preprocessing_tfidf import tfidf_caching
+from preprocessing_tfidf import ner_preprocessing
 from preprocessing import preprocess_cached
 from preprocessing_bert import BertPreprocessor
 from preprocessing_fasttext import FasttextPreprocessor
@@ -10,13 +12,25 @@ logger = logging.getLogger()
 if __name__ == '__main__':
     logger.info("Starting caching pipeline")
 
-    from_ = '2021-03-29T00:00:00.000'
-    to_ = '2021-04-04T23:59:00.000'
+    from_ = '2021-03-06T00:00:00.000'
+    to_ = '2021-04-06T23:59:00.000'
 
     logger.info(f"Dates interval : from {from_} to {to_}")
 
     df = fetch(from_, to_)
     df = preprocess_cached(df)
+
+    logger.info("NER preprocessing pipeline begins")
+
+    ner_preprocessing(df)
+
+    logger.info("NER preprocessing pipeline done")
+
+    logger.info("TFIDF preprocessing pipeline begins")
+
+    tfidf_caching(df)
+
+    logger.info("TFIDF preprocessing pipeline done")
 
     logger.info("Fasttext preprocessing pipeline begins")
 

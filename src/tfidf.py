@@ -1,3 +1,5 @@
+from news_diversification.src.preprocessing_tfidf import ner_preprocessing, TFIDF_VECTORIZER_LOCATION, \
+    TFIDF_MATRIX_LOCATION
 from preprocessing import preprocess_target
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -27,39 +29,22 @@ def determine_ner_value(entity):
     label = entity[1]
 
     if label == "PERSON":
-        return 5
-    elif label == "ORG":
-        return 3
-    elif label == "GPE" or label == "LOC":
-        return 3
-    elif label == "EVENT":
-        return 2
-    elif label == "PRODUCT":
-        return 1.5
-    elif label == "NORP":
-        return 1.5
-    else:
         return 1
+    elif label == "ORG":
+        return 0.7
+    elif label == "GPE" or label == "LOC":
+        return 0.5
+    elif label == "EVENT":
+        return 0.3
+    elif label == "PRODUCT":
+        return 0.1
+    elif label == "NORP":
+        return 0.1
+    else:
+        return 0.05
 
 
-def ner_preprocessing(df):
-    l = list(df["cleaned_important_text"])
-    d = {}
-
-    for i, text in enumerate(l):
-        doc = NLP(text)
-        entities = [(X.text, X.label_) for X in doc.ents]
-        for entity in entities:
-            if entity in d:
-                d[entity].append(i)
-            else:
-                d[entity] = [i]
-
-    with open(NER_LOCATION, 'wb') as f:
-        pickle.dump(d, f, pickle.HIGHEST_PROTOCOL)
-
-
-def ner_calculation(df, target_clean):
+def target_ner_impact_evaluation(df, target_clean):
     df["ner_similarities"] = np.zeros(len(df))
 
     with open(NER_LOCATION, "rb") as f:
@@ -78,27 +63,23 @@ def ner_calculation(df, target_clean):
     return df
 
 
-def tfidf(target_clean, filter_result = False, ner=True):
+def tfidf(target_clean, filter_result=False, ner=True):
     df = pd.read_csv("../resources/cleaned_data.csv")
 
-    vectorizer = TfidfVectorizer()
+    with open(TFIDF_VECTORIZER_LOCATION, "rb") as f:
+        vectorizer = pickle.load(f)
 
-    l = list(df["cleaned_important_text"])
-    l.append(target_clean)
+    with open(TFIDF_MATRIX_LOCATION, "rb") as f:
+        X = pickle.load(f)
 
-    X = vectorizer.fit_transform(l)
+    y = vectorizer.transform([target_clean])
 
-    cosine_similarities = linear_kernel(X[-1], X).flatten()[:-1]
+    cosine_similarities = linear_kernel(y, X).flatten()[:-1]
 
     df["similarities"] = cosine_similarities
 
-    df = df[df["similarities"] != 0]
-
-    df.reset_index(drop=True, inplace=True)
-
     if ner:
-        # ner_preprocessing(df)
-        df = ner_calculation(df, target_clean)
+        df = target_ner_impact_evaluation(df, target_clean)
 
         df["similarities"] = 0.9 * df["similarities"] + 0.1 * df["ner_similarities"]
 
@@ -117,13 +98,22 @@ def tfidf(target_clean, filter_result = False, ner=True):
         else:
             print(f"{k} :\n {v[0]}")
 
+    print("OLD")
+
+    print(df.iloc[0].url, df.iloc[0].similarities)
+    print(df.iloc[1].url, df.iloc[1].similarities)
+    print(df.iloc[2].url, df.iloc[2].similarities)
+    print(df.iloc[3].url, df.iloc[3].similarities)
+    print(df.iloc[4].url, df.iloc[4].similarities)
 
 def main(url):
     target_clean, publication_date = preprocess_target(url)
-    tfidf(target_clean)
+    import re
+    target_clean = re.sub('\n', '', target_clean)
+    print(target_clean)
+    tfidf(target_clean, ner=True)
 
 
 if __name__ == '__main__':
-    url = "https://www.nytimes.com/2021/03/31/business/economy/biden-infrastructure-plan.html"
-    # url = "https://www.bloomberg.com/news/articles/2021-03-18/nokia-ceo-thinks-longer-5g-cycle-gives-him-time-to-catch-up?srnd=technology-vp"
+    url = "https://www.bbc.com/news/business-56559073"
     main(url)

@@ -3,6 +3,7 @@ from newsplease import NewsPlease
 import logging
 from pandas.core.common import SettingWithCopyWarning
 import warnings
+import re
 
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 logging.basicConfig(level=logging.INFO)
@@ -78,6 +79,13 @@ def get_embedding(tokens):
     return tokens.vector.tolist()
 
 
+def remove_spaces(text):
+    text = re.sub("\n", "", text)
+    text = re.sub("\t", "", text)
+    text = " ".join(text.split())
+    return text
+
+
 def preprocess_cached(df, embedding=True, cache=True):
     df = filter_df(df, ("url", "text", "title", "publish_datetime", "polarity", "subjectivity"))
     logger.info("Parsing important text...")
@@ -88,9 +96,12 @@ def preprocess_cached(df, embedding=True, cache=True):
 
     df["cleaned_important_text"] = df.important_text.apply(clean_text)
 
+    df["cleaned_important_text"] = df.cleaned_important_text.apply(remove_spaces)
+
     if embedding:
         df["embedding"] = df.cleaned_important_text.apply(get_embedding)
-        df = filter_df(df, ("url", "cleaned_important_text", "embedding", "publish_datetime", "polarity", "subjectivity"))
+        df = filter_df(df,
+                       ("url", "cleaned_important_text", "embedding", "publish_datetime", "polarity", "subjectivity"))
     else:
         df = filter_df(df, ("url", "cleaned_important_text", "publish_datetime", "polarity", "subjectivity"))
 

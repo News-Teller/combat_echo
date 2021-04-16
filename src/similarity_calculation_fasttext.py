@@ -6,14 +6,13 @@ from datetime import datetime
 
 
 class SimilarityFasttext:
-    CLEANED_DATA_PATH_FASTTEXT = '../resources/cleaned_data_fasttext.csv'
+    CLEANED_DATA_PATH_FASTTEXT = '../resources/cleaned_data_fasttext.pickle'
 
     def __init__(self, target):
         self.target = target
         self.load_model_and_data()
         self.get_target_embedding()
 
-    TRAINING_DATA_PATH = '../resources/train.txt'
     MODEL_PATH = "../resources/model.bin"
 
     def load_model_and_data(self):
@@ -52,7 +51,7 @@ class SimilarityFasttext:
         self.data.drop_duplicates("similarities", inplace=True)
         self.data.sort_values(by='similarities', ascending=False, inplace=True)
 
-        max_similarity = self.data.iloc[0].similarities
-        self.data = self.data.apply(lambda row: self.filter_similars(row, max_similarity), axis=1).dropna()
+        # max_similarity = self.data.iloc[0].similarities
+        # self.data = self.data.apply(lambda row: self.filter_similars(row, max_similarity), axis=1).dropna()
 
         return self.data.head(100)

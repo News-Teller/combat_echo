@@ -54,9 +54,9 @@ class SimilarityTransformer:
         self.data.drop_duplicates("similarities", inplace=True)
         self.data.sort_values(by='similarities', ascending=False, inplace=True)
 
-        max_similarity = self.data.iloc[0].similarities
-        print("Before", len(self.data))
-        self.data = self.data.apply(lambda row: self.__filter_similars(row, max_similarity), axis=1).dropna()
-        print("After", len(self.data))
+        # max_similarity = self.data.iloc[0].similarities
+        # print("Before", len(self.data))
+        # self.data = self.data.apply(lambda row: self.__filter_similars(row, max_similarity), axis=1).dropna()
+        # print("After", len(self.data))
 
         return self.data.head(100)

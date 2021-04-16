@@ -24,4 +24,6 @@ def get_most_similar(data, target_emb, num=5):
 
     data["similarity"] = similarities#data.apply(get_similarities, target_emb)
 
-    return data.nlargest(num, 'similarity')
+    data.sort_values(by='similarity', ascending=False, inplace=True)
+
+    return data.head(num)

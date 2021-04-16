@@ -1,9 +1,11 @@
+from news_diversification.src.similarity_calculation_spacy import get_most_similar
 from result_ordering import divide_by_polarity_and_subjectivity
 from preprocessing import preprocess_target
 from similarity_calculation_bert import SimilarityTransformer
+from preprocessing import get_embedding
 
 import pandas as pd
-
+CLEANED_DATA_PATH = "../resources/cleaned_data.csv"
 
 def main(url):
 
@@ -11,17 +13,21 @@ def main(url):
 
     print(target_clean)
 
-    transformer = SimilarityTransformer()
+    url_emb = get_embedding(target_clean)
+    corpus = pd.read_csv(CLEANED_DATA_PATH)
+    corpus["embedding"] = corpus.embedding.apply(eval)
 
-    result = transformer.calculate_similarity_for_target(target_clean)
+    result = get_most_similar(corpus, url_emb, num=5)
+    # result = result.url.tolist()
 
-    output = divide_by_polarity_and_subjectivity(result, publication_date, random=False)
+    output = divide_by_polarity_and_subjectivity(result, random=False)
 
     for k, v in output.items():
         if len(v) == 2:
             print(f"{k} :\n {v[0]}\n {v[1]}")
-        else:
+        elif len(v) == 1:
             print(f"{k} :\n {v[0]}")
+
 
     print("OLD")
 

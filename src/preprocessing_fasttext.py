@@ -6,7 +6,7 @@ import logging
 
 class FasttextPreprocessor:
     TRAINING_DATA_PATH = '../resources/train.txt'
-    CLEANED_DATA_PATH_FASTTEXT = '../resources/cleaned_data_fasttext.csv'
+    CLEANED_DATA_PATH_FASTTEXT = '../resources/cleaned_data_fasttext.pickle'
     MODEL_PATH = "../resources/model.bin"
     logging.basicConfig(level=logging.INFO)
     __logger = logging.getLogger()
