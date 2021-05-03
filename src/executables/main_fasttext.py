@@ -1,17 +1,7 @@
-from preprocessing import preprocess_target
-from preprocessing import get_embedding
-from preprocessing import CLEANED_DATA_PATH
-from similarity_calculation_spacy import get_most_similar
-from preprocessing_fasttext import FasttextPreprocessor
-from similarity_calculation_fasttext import SimilarityFasttext
+from news_diversification.src.preprocessing.preprocessing import preprocess_target
+from news_diversification.src.result_ordering import divide_by_polarity_and_subjectivity
+from news_diversification.src.similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
 import pandas as pd
-import numpy as np
-import time
-from fetching import fetch
-from preprocessing import preprocess_cached
-from datetime import datetime
-
-from result_ordering import divide_by_polarity_and_subjectivity
 
 pd.set_option('display.max_columns', 500)
 
@@ -27,13 +17,15 @@ def main(url):
 
     target_clean, publication_date = preprocess_target(url)
 
+    # target_clean = clean_text("Hate crimes in Asia are not unique to the United States. An Asian man was brutally attacked in London during a live stream, but he received a great deal of help from an angry bystander.")
+
     # print(publication_date)
 
     print(target_clean)
 
-    calculator = SimilarityFasttext(target_clean)
+    calculator = SimilarityFasttext()
 
-    result = calculator.get_similarities()
+    result = calculator.get_similarities(target_clean)
 
     output = divide_by_polarity_and_subjectivity(result, publication_date, random=False)
 
@@ -55,5 +47,5 @@ def main(url):
 
 
 if __name__ == '__main__':
-    url = "https://www.bbc.com/news/business-56559073"
+    url = "https://www.theguardian.com/uk-news/2021/apr/18/the-queen-alone-how-prince-philip-death-will-change-the-future-of-the-monarchy"
     main(url)

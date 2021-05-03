@@ -2,13 +2,15 @@ import tweepy
 import logging
 import time
 import pandas as pd
+
+from news_diversification.src.result_ordering import divide_by_polarity_and_subjectivity
 from twitter_connector import TwitterConnector
-from preprocessing import preprocess_target
-from preprocessing import get_embedding
-from preprocessing import CLEANED_DATA_PATH
-from similarity_calculation_spacy import get_most_similar
-from similarity_calculation_bert import SimilarityTransformer
-from similarity_calculation_fasttext import SimilarityFasttext
+from news_diversification.src.preprocessing.preprocessing import preprocess_target
+from news_diversification.src.preprocessing.preprocessing import get_embedding
+from news_diversification.src.preprocessing.preprocessing import CLEANED_DATA_PATH
+from news_diversification.src.similarity_calculation.similarity_calculation_spacy import get_most_similar
+from news_diversification.src.similarity_calculation.similarity_calculation_bert import SimilarityTransformer
+from news_diversification.src.similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -19,17 +21,17 @@ def process_urls_bert(url_clean):
 
     result = transformer.calculate_similarity_for_target(url_clean)
 
-    result = result.url.tolist()
+    # result = result.url.tolist()
 
     return result
 
 
 def process_urls_fasttext(url_clean):
-    calculator = SimilarityFasttext(url_clean)
+    calculator = SimilarityFasttext()
 
-    result = calculator.get_similarities()
+    result = calculator.get_similarities(url_clean)
 
-    result = result.url.tolist()
+    # result = result.url.tolist()
 
     return result
 
@@ -39,18 +41,29 @@ def process_urls_spacy(url_clean):
     corpus = pd.read_csv(CLEANED_DATA_PATH)
     corpus["embedding"] = corpus.embedding.apply(eval)
 
-    result = get_most_similar(corpus, url_emb, num=5)
-    result = result.url.tolist()
+    result = get_most_similar(corpus, url_clean, url_emb, num=5)
+    # result = result.url.tolist()
 
     return result
 
 
-def process_urls(urls, model="fasttext"):
+def format_output(output):
+    res = ""
+    for k, v in output.items():
+        if len(v) == 2:
+            res += f"{k} :\n {v[0]}\n {v[1]}" + "\n"
+        elif len(v) == 1:
+            res += f"{k} :\n {v[0]}" + "\n"
+        else:
+            res += "No articles" + "\n"
+    return res
+
+def process_urls(urls, filter_by = True, model="fasttext"):
     similar_urls = []
 
     for url_d in urls:
         url = url_d["expanded_url"]
-        url_clean, _ = preprocess_target(url)  # TODO factor date
+        url_clean, publication_date = preprocess_target(url)  # TODO factor date
         if url_clean is not None:
             if model == "fasttext":
                 logger.info("Using fasttext")
@@ -61,8 +74,15 @@ def process_urls(urls, model="fasttext"):
             else:
                 logger.info("Using spacy")
                 result = process_urls_spacy(url_clean)
-            result.reverse()
-            similar_urls += result
+            if filter_by:
+                output = divide_by_polarity_and_subjectivity(result, publication_date, random=False)
+                output = format_output(output)
+                # print("output:", output)
+                similar_urls.append(output)
+                print("similar:\n", similar_urls)
+            else:
+                result.reverse()
+                similar_urls += result
     return similar_urls
 
 
@@ -75,10 +95,11 @@ def reply_to_user(similar_urls, api, tweet):
 
     else:
         status = f"Hey @{tweet.user.screen_name} here are some articles, similar to yours: \n" + "\n".join(similar_urls)
-    api.update_status(
-        status=status,
-        in_reply_to_status_id=tweet.id,
-    )
+        print(status)
+    # api.update_status(
+    #     status=status,
+    #     in_reply_to_status_id=tweet.id,
+    # )
 
 
 def check_mentions(api, since_id, model="fasttext"):
@@ -115,9 +136,10 @@ def main():
     api = connector.get_api()
 
     since_id = find_last_reply(api)
+    since_id = 1
 
     while True:
-        since_id = check_mentions(api, since_id, model="fasttext")
+        since_id = check_mentions(api, since_id, model="bert")
         logger.info("Waiting...")
         time.sleep(10)
 

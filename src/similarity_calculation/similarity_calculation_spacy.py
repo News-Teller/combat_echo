@@ -11,7 +11,7 @@ def get_similarities(row, target_emb):
     return cosine_similarity(target_emb, sample_emb)
 
 
-def get_most_similar(data, target_emb, num=5):
+def get_most_similar(data, target, target_emb, num=5):
     similarities = []
 
     data.drop_duplicates(subset=["cleaned_important_text"], inplace=True) # TODO figure out why it doesn't work at pre
@@ -24,6 +24,12 @@ def get_most_similar(data, target_emb, num=5):
 
     data["similarity"] = similarities#data.apply(get_similarities, target_emb)
 
-    data.sort_values(by='similarity', ascending=False, inplace=True)
+    copy = data.sort_values(by='similarity', ascending=False)
 
-    return data.head(num)
+    copy = copy[copy["cleaned_important_text"] != target]
+
+    copy.reset_index(drop=True, inplace=True)
+
+    return copy.head(num)
+
+    # return data.head(num)

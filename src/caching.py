@@ -1,9 +1,7 @@
 from fetching import fetch
-from preprocessing_tfidf import tfidf_caching
-from preprocessing_tfidf import ner_preprocessing
-from preprocessing import preprocess_cached
-from preprocessing_bert import BertPreprocessor
-from preprocessing_fasttext import FasttextPreprocessor
+from news_diversification.src.preprocessing.preprocessing import preprocess_cached
+from news_diversification.src.preprocessing.preprocessing_bert import BertPreprocessor
+from news_diversification.src.preprocessing.preprocessing_fasttext import FasttextPreprocessor
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -12,8 +10,8 @@ logger = logging.getLogger()
 if __name__ == '__main__':
     logger.info("Starting caching pipeline")
 
-    from_ = '2021-03-06T00:00:00.000'
-    to_ = '2021-04-06T23:59:00.000'
+    from_ = '2021-04-11T00:00:00.000'
+    to_ = '2021-04-17T23:59:00.000'
 
     logger.info(f"Dates interval : from {from_} to {to_}")
 
