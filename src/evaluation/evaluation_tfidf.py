@@ -1,7 +1,6 @@
 import pandas as pd
 import time
 from news_diversification.src.evaluation.fetch_data_for_evaluation import load_evaluation_data
-from news_diversification.src.preprocessing.preprocessing import preprocess_target_bert, remove_spaces, clean_text
 from news_diversification.src.preprocessing.preprocessing_tfidf import TfidfPreprocessor
 from news_diversification.src.similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
 

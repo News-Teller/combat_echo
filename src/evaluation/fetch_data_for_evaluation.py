@@ -2,7 +2,7 @@ import pickle
 
 import pandas as pd
 
-from news_diversification.src.preprocessing.preprocessing import preprocess_target_bert, remove_spaces, clean_text
+from preprocessing.preprocessing import preprocess_target_bert, remove_spaces, clean_text
 
 
 def fetch_data_for_evaluation(test_urls):

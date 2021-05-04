@@ -1,4 +1,4 @@
-from news_diversification.src.preprocessing.preprocessing import preprocess_target_bert, preprocess_target, clean_text, \
+from preprocessing.preprocessing import preprocess_target_bert, clean_text, \
     remove_spaces
 from news_diversification.src.preprocessing.preprocessing_tfidf import TfidfPreprocessor
 import pandas as pd

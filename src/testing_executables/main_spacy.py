@@ -1,7 +1,7 @@
-from news_diversification.src.result_ordering import divide_by_polarity_and_subjectivity
+from news_diversification.src.main.result_ordering import divide_by_polarity_and_subjectivity
 from news_diversification.src.similarity_calculation.similarity_calculation_spacy import get_most_similar
-from news_diversification.src.preprocessing.preprocessing import preprocess_target
-from news_diversification.src.preprocessing.preprocessing import get_embedding
+from preprocessing.preprocessing import preprocess_target
+from preprocessing.preprocessing import get_embedding
 
 import pandas as pd
 CLEANED_DATA_PATH = "../../resources/cleaned_data.csv"

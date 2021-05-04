@@ -1,7 +1,7 @@
 import pandas as pd
-from ESClient.helpers import get_articles
-from ESClient.esclient import ElasticsearchClient
 import logging
+from news_diversification.src.ESClient.esclient import ElasticsearchClient
+from news_diversification.src.ESClient.helpers import get_articles
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()

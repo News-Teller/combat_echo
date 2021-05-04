@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 from dateutil.parser import parse
-
-from ESClient.esclient import ElasticsearchClient
+from news_diversification.src.ESClient.esclient import ElasticsearchClient
 
 
 def get_articles(client: ElasticsearchClient, timeframe: tuple) -> list:

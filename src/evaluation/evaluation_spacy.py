@@ -1,5 +1,4 @@
 from news_diversification.src.evaluation.fetch_data_for_evaluation import load_evaluation_data
-from news_diversification.src.preprocessing.preprocessing import preprocess_target
 from news_diversification.src.similarity_calculation.similarity_calculation_spacy import get_most_similar
 import spacy
 import pandas as pd
