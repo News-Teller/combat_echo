@@ -82,6 +82,34 @@ def format_output(output):
     return res
 
 
+def processing(text_clean, text=None, model="google_usc"):
+    if model == "fasttext":
+        logger.info("Using fasttext")
+        result = process_urls_fasttext(text_clean)
+    elif model == "bert":
+        logger.info("Using bert")
+        result = process_urls_bert(text_clean)
+    elif model == "tfidf":
+        logger.info("Using tfidf")
+        result = process_urls_tfidf(text, text_clean)
+    elif model == "google_usc":
+        logger.info("Using google usc")
+        result = process_urls_google_usc(text_clean)
+    else:
+        logger.info("Using spacy")
+        result = process_urls_spacy(text_clean)
+    return result
+
+
+def process_text(text, model="google_usc"):
+    print(f"Text {text}")
+    text_clean = clean_text(remove_spaces(text))
+    print(f"Text clean {text_clean}")
+    result = processing(text_clean)
+    result.reverse()
+    return result
+
+
 def process_urls(urls, filter_by=False, model="google_usc"):
     similar_urls = []
 
@@ -91,21 +119,7 @@ def process_urls(urls, filter_by=False, model="google_usc"):
         if url is not None:
             url_clean = clean_text(remove_spaces(url))
             if url_clean is not None:
-                if model == "fasttext":
-                    logger.info("Using fasttext")
-                    result = process_urls_fasttext(url_clean)
-                elif model == "bert":
-                    logger.info("Using bert")
-                    result = process_urls_bert(url_clean)
-                elif model == "tfidf":
-                    logger.info("Using tfidf")
-                    result = process_urls_tfidf(url, url_clean)
-                elif model == "google_usc":
-                    logger.info("Using google usc")
-                    result = process_urls_google_usc(url_clean)
-                else:
-                    logger.info("Using spacy")
-                    result = process_urls_spacy(url_clean)
+                result = processing(url_clean, url, model=model)
                 if filter_by:
                     output = divide_by_polarity_and_subjectivity(result, publication_date, random=False)
                     output = format_output(output)
@@ -142,6 +156,7 @@ def check_mentions(api, since_id, model="google_usc"):
     for tweet in tweepy.Cursor(api.mentions_timeline, since_id=since_id).items():
 
         new_since_id = max(tweet.id, new_since_id)
+        original_tweet = None
 
         if tweet.in_reply_to_status_id is not None:  # I am mentioned in a reply
             print("I am mentioned in a reply")
@@ -152,11 +167,17 @@ def check_mentions(api, since_id, model="google_usc"):
             print(original_tweet.text)
             urls = original_tweet.entities["urls"]
         else:
-            print("Not a reply")
             urls = tweet.entities["urls"]
 
-        logger.info("Processing urls...")
-        similar_urls = process_urls(urls, model=model, filter_by=False)
+        if len(urls) == 0:
+            logger.info("Processing text...")
+            if original_tweet is not None:
+                similar_urls = process_text(original_tweet.text, model=model)
+            else:
+                similar_urls = process_text(tweet.text, model=model)
+        else:
+            logger.info("Processing urls...")
+            similar_urls = process_urls(urls, model=model, filter_by=False)
         logger.info("Replying to user...")
         try:
             reply_to_user(similar_urls, api, tweet)
