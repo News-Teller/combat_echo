@@ -2,6 +2,7 @@
 from preprocessing.preprocessing import preprocess_target_bert
 from news_diversification.src.main.result_ordering import divide_by_polarity_and_subjectivity
 from news_diversification.src.similarity_calculation.similarity_calculation_bert import SimilarityTransformer
+from similarity_calculation.pca_diversification import get_most_diverse_articles
 
 
 def main(url):
@@ -13,26 +14,21 @@ def main(url):
 
     transformer = SimilarityTransformer()
 
-    result = transformer.calculate_similarity_for_target(target_clean)
+    result = transformer.calculate_similarity_for_target(target_clean, num=10)
 
-    output = divide_by_polarity_and_subjectivity(result, publication_date, random=False)
 
-    for k, v in output.items():
-        if len(v) == 2:
-            print(f"{k} :\n {v[0]}\n {v[1]}")
-        else:
-            print(f"{k} :\n {v[0]}")
-
-    print("OLD")
+    result = get_most_diverse_articles(result, embedding_column="bert_embedding")
 
     print(result.url.iloc[0])
     print(result.url.iloc[1])
     print(result.url.iloc[2])
-    print(result.url.iloc[3])
-    print(result.url.iloc[4])
+
+    print(result.important_text.loc[0])
+    print(result.important_text.loc[1])
+    print(result.important_text.loc[2])
 
 
 if __name__ == '__main__':
-    url = "https://www.theguardian.com/uk-news/2021/apr/18/the-queen-alone-how-prince-philip-death-will-change-the-future-of-the-monarchy"
+    url = "https://www.independent.co.uk/news/world/americas/us-politics/qanon-conspiracy-biden-robot-cnn-b1809531.html"
 
     main(url)

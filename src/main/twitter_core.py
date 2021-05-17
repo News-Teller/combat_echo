@@ -7,6 +7,7 @@ import os
 from news_diversification.src.main.result_ordering import divide_by_polarity_and_subjectivity
 from news_diversification.src.similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
 from news_diversification.src.similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
+from similarity_calculation.pca_diversification import get_most_diverse_articles
 from twitter_connector import TwitterConnector
 from preprocessing.preprocessing import preprocess_target, preprocess_target_bert, clean_text, remove_spaces
 from preprocessing.preprocessing import get_embedding
@@ -22,7 +23,9 @@ logger = logging.getLogger()
 def process_urls_google_usc(url_clean):
     calculator = SimilarityGoogleUsc()
 
-    result = calculator.calculate_similarity_for_target(url_clean)
+    result = calculator.calculate_similarity_for_target(url_clean, threshold=0.1)
+
+    result = get_most_diverse_articles(result)
 
     result = result.url.tolist()
 
@@ -44,6 +47,8 @@ def process_urls_bert(url_clean):
 
     result = transformer.calculate_similarity_for_target(url_clean)
 
+    result = get_most_diverse_articles(result, embedding_column="bert_embedding")
+
     result = result.url.tolist()
 
     return result
@@ -53,6 +58,8 @@ def process_urls_fasttext(url_clean):
     calculator = SimilarityFasttext()
 
     result = calculator.get_similarities(url_clean)
+
+    result = get_most_diverse_articles(result, embedding_column="fasttext_embedding")
 
     result = result.url.tolist()
 
@@ -65,6 +72,9 @@ def process_urls_spacy(url_clean):
     corpus["embedding"] = corpus.embedding.apply(eval)
 
     result = get_most_similar(corpus, url_clean, url_emb, num=5)
+
+    result = get_most_diverse_articles(result)
+
     result = result.url.tolist()
 
     return result
@@ -105,7 +115,7 @@ def process_text(text, model="google_usc"):
     print(f"Text {text}")
     text_clean = clean_text(remove_spaces(text))
     print(f"Text clean {text_clean}")
-    result = processing(text_clean)
+    result = processing(text_clean, model)
     result.reverse()
     return result
 

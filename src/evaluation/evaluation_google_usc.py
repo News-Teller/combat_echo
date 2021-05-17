@@ -35,8 +35,8 @@ def get_google_usc_accuracy(df, url_mapping):
         publication_date = row[1][3]
         url_emb = row[1][4]
 
-        print(url)
-        print(target_clean)
+        # print(url)
+        # print(target_clean)
 
         expected_set = url_mapping[url]
 
@@ -50,12 +50,12 @@ def get_google_usc_accuracy(df, url_mapping):
 
         accuracy.append(acc)
 
-        print("Expected : ", expected_set)
-        print("Predicted : ", result_set)
-        print("Intersection : ", intersection)
-        print("Accuracy: ", acc)
-
-        print("\n")
+        # print("Expected : ", expected_set)
+        # print("Predicted : ", result_set)
+        # print("Intersection : ", intersection)
+        # print("Accuracy: ", acc)
+        #
+        # print("\n")
 
     total_acc = sum(accuracy) / len(accuracy)
 
@@ -76,7 +76,7 @@ def preprocess_data_for_google_usc(df):
 def main():
     df, test_urls, url_mapping = load_evaluation_data()
 
-    df = preprocess_data_for_google_usc(df)
+    # df = preprocess_data_for_google_usc(df)
 
     df = pd.read_pickle("../../resources/evaluation/evaluation_cleaned_google_usc.pickle")
 

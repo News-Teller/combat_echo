@@ -3,6 +3,8 @@ from news_diversification.src.main.result_ordering import divide_by_polarity_and
 from news_diversification.src.similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
 import pandas as pd
 
+from similarity_calculation.pca_diversification import get_most_diverse_articles
+
 pd.set_option('display.max_columns', 500)
 
 
@@ -27,25 +29,27 @@ def main(url):
 
     result = calculator.get_similarities(target_clean)
 
-    output = divide_by_polarity_and_subjectivity(result, publication_date, random=False)
+    result = get_most_diverse_articles(result, embedding_column="fasttext_embedding")
 
-    for k, v in output.items():
-        if len(v) == 2:
-            print(f"{k} :\n {v[0]}\n {v[1]}")
-        elif len(v) == 1:
-            print(f"{k} :\n {v[0]}")
-        else:
-            print("No articles")
+    # output = divide_by_polarity_and_subjectivity(result, publication_date, random=False)
 
-    print("OLD")
+    # for k, v in output.items():
+    #     if len(v) == 2:
+    #         print(f"{k} :\n {v[0]}\n {v[1]}")
+    #     elif len(v) == 1:
+    #         print(f"{k} :\n {v[0]}")
+    #     else:
+    #         print("No articles")
 
-    print(result.iloc[0].url, result.iloc[0].similarities)
-    print(result.iloc[1].url, result.iloc[1].similarities)
-    print(result.iloc[2].url, result.iloc[2].similarities)
-    print(result.iloc[3].url, result.iloc[3].similarities)
-    print(result.iloc[4].url, result.iloc[4].similarities)
+    print(result.url.iloc[0])
+    print(result.url.iloc[1])
+    print(result.url.iloc[2])
+
+    print(result.important_text.loc[0])
+    print(result.important_text.loc[1])
+    print(result.important_text.loc[2])
 
 
 if __name__ == '__main__':
-    url = "https://www.theguardian.com/uk-news/2021/apr/18/the-queen-alone-how-prince-philip-death-will-change-the-future-of-the-monarchy"
+    url = "https://www.independent.co.uk/news/world/americas/us-politics/qanon-conspiracy-biden-robot-cnn-b1809531.html"
     main(url)

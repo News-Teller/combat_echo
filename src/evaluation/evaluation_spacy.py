@@ -15,8 +15,8 @@ def get_spacy_accuracy(df, url_mapping):
         publication_date = row[1][3]
         url_emb = row[1][4]
 
-        print(url)
-        print(target_clean)
+        # print(url)
+        # print(target_clean)
 
         expected_set = url_mapping[url]
 
@@ -30,12 +30,12 @@ def get_spacy_accuracy(df, url_mapping):
 
         accuracy.append(acc)
 
-        print("Expected : ", expected_set)
-        print("Predicted : ", result_set)
-        print("Intersection : ", intersection)
-        print("Accuracy: ", acc)
-
-        print("\n")
+        # print("Expected : ", expected_set)
+        # print("Predicted : ", result_set)
+        # print("Intersection : ", intersection)
+        # print("Accuracy: ", acc)
+        #
+        # print("\n")
 
     total_acc = sum(accuracy) / len(accuracy)
 

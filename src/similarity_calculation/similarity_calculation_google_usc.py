@@ -43,7 +43,19 @@ class SimilarityGoogleUsc:
         #     lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%S.000Z'))
         return df
 
-    def calculate_similarity_for_target(self, target, num=5):
+    @staticmethod
+    def __threshold_similarity(df, threshold=0.1):
+        max_similarity = df.similarities.loc[0]
+        min_similarity = max_similarity - threshold * max_similarity
+
+        threshold_df = df[df["similarities"] >= min_similarity]
+
+        if len(threshold_df) < 5:
+            return df.head(5)
+        else:
+            return threshold_df
+
+    def calculate_similarity_for_target(self, target, threshold=0.1):
         self.__create_embeddings_target(str(target))
         self.__calculate_similarities()
 
@@ -54,4 +66,6 @@ class SimilarityGoogleUsc:
 
         copy.reset_index(drop=True, inplace=True)
 
-        return copy.head(num)
+        copy = self.__threshold_similarity(copy, threshold)
+
+        return copy

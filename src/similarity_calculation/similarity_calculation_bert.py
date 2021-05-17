@@ -20,9 +20,9 @@ class SimilarityTransformer:
         else:
             self.embeddings_path = self.__EMBEDDINGS_PATH
 
+        self.embeddings = torch.load(self.embeddings_path)
         self.data = self.__load_data_with_embeddings()
         self.target_emb = None
-        self.embeddings = torch.load(self.embeddings_path)
 
     @staticmethod
     def __load_model(model_name="stsb-roberta-large"):
@@ -35,19 +35,19 @@ class SimilarityTransformer:
         if self.embeddings is not None:
             similarity_scores = util.pytorch_cos_sim(self.embeddings, self.target_emb)
 
-
         if similarity_scores is not None:
             pairs = []
             for i in range(len(similarity_scores)):
                 pairs.append({'index': i, 'score': similarity_scores[i][0]})
             self.data["similarities"] = [pair["score"].item() for pair in pairs]
 
-
     def __create_embeddings_target(self, target):
         self.target_emb = self.model.encode(target, convert_to_tensor=True)
 
     def __load_data_with_embeddings(self):
         df = pd.read_csv(self.data_path)
+        df["bert_embedding"] = list(torch.chunk(self.embeddings, self.embeddings.shape[0], dim=0))
+        df["bert_embedding"] = df["bert_embedding"].apply(lambda x: x.numpy()[0])
         # TODO figure out what to do with date
         # df["publish_datetime"] = df["publish_datetime"].apply(
         #     lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%S.000Z'))
