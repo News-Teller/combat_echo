@@ -1,6 +1,6 @@
 from live_processing.media_filtering import perform_media_filtering, cache_media_dict
 from preprocessing.preprocessing import preprocess_target
-from news_diversification.src.similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
+from similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
 from live_processing.pca_diversification import get_most_diverse_articles
 
 import pandas as pd
@@ -21,7 +21,13 @@ def main(url):
 
     df = calculator.calculate_similarity_for_target(target_clean, threshold=0.1)
 
-    filtered = perform_media_filtering(df)
+    print("Before")
+    print(df)
+
+    filtered = perform_media_filtering(df, target_perspective="left")
+
+    print("After")
+    print(filtered)
 
     result = get_most_diverse_articles(filtered)
 

@@ -1,4 +1,4 @@
-from news_diversification.src.similarity_calculation.similarity_calculation_spacy import get_most_similar
+from similarity_calculation.similarity_calculation_spacy import get_most_similar
 from preprocessing.preprocessing import preprocess_target
 from preprocessing.preprocessing import get_embedding
 

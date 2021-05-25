@@ -20,6 +20,13 @@ def discard_biased_media(url, media_dict, facts="low"):
     return url
 
 
+# def filter_by_target_perspective(url, target, media_dict):
+#     if url in media_dict:
+#         if media_dict[url][2] == target:
+#             return url
+#     return None
+#
+
 def add_bias(url, media_dict):
     if url in media_dict:
         return media_dict[url][2]

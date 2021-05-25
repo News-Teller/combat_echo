@@ -1,8 +1,8 @@
 from preprocessing.preprocessing import preprocess_target_bert
 import pandas as pd
 
-from news_diversification.src.preprocessing.preprocessing_google_usc import GoogleUscPreprocessor
-from news_diversification.src.similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
+from preprocessing.preprocessing_google_usc import GoogleUscPreprocessor
+from similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
 
 CLEANED_DATA_PATH = "../../resources/cleaned_data.csv"
 

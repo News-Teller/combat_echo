@@ -1,6 +1,6 @@
 # from result_ordering import divide_by_polarity_and_subjectivity
 from preprocessing.preprocessing import preprocess_target_bert
-from news_diversification.src.similarity_calculation.similarity_calculation_bert import SimilarityTransformer
+from similarity_calculation.similarity_calculation_bert import SimilarityTransformer
 from live_processing.pca_diversification import get_most_diverse_articles
 
 

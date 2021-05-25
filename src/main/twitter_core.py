@@ -5,17 +5,16 @@ import pandas as pd
 import os
 
 from live_processing.media_filtering import perform_media_filtering, clean_domain
-from news_diversification.src.main.result_ordering import divide_by_polarity_and_subjectivity
-from news_diversification.src.similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
-from news_diversification.src.similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
+from similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
+from similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
 from live_processing.pca_diversification import get_most_diverse_articles
 from twitter_connector import TwitterConnector
 from preprocessing.preprocessing import preprocess_target_bert, clean_text, remove_spaces
 from preprocessing.preprocessing import get_embedding
 from preprocessing.preprocessing import CLEANED_DATA_PATH
-from news_diversification.src.similarity_calculation.similarity_calculation_spacy import get_most_similar
-from news_diversification.src.similarity_calculation.similarity_calculation_bert import SimilarityTransformer
-from news_diversification.src.similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
+from similarity_calculation.similarity_calculation_spacy import get_most_similar
+from similarity_calculation.similarity_calculation_bert import SimilarityTransformer
+from similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -127,7 +126,7 @@ def process_text(text, model="google_usc"):
     return result
 
 
-def process_urls(urls, filter_by=False, model="google_usc"):
+def process_urls(urls, model="google_usc"):
     similar_urls = []
 
     for url_d in urls:
@@ -137,13 +136,8 @@ def process_urls(urls, filter_by=False, model="google_usc"):
             url_clean = clean_text(remove_spaces(url))
             if url_clean is not None:
                 result = processing(url_clean, url, model=model)
-                if filter_by:
-                    output = divide_by_polarity_and_subjectivity(result, publication_date, random=False)
-                    output = format_output(output)
-                    similar_urls.append(output)
-                else:
-                    result.reverse()
-                    similar_urls += result
+                result.reverse()
+                similar_urls += result
     return similar_urls
 
 
@@ -217,7 +211,7 @@ def check_mentions(api, since_id, model="google_usc"):
                     similar_urls = process_text(tweet.text, model=model)
             else:
                 logger.info("Processing urls...")
-                similar_urls = process_urls(urls, model=model, filter_by=False)
+                similar_urls = process_urls(urls, model=model)
             logger.info("Replying to user...")
         except Exception as e:
             logger.error(f"Exception happened while processing urls : {e}")

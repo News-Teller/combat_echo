@@ -2,7 +2,7 @@ import pandas as pd
 import tensorflow_hub as hub
 import numpy as np
 
-from news_diversification.src.evaluation.fetch_data_for_evaluation import load_evaluation_data
+from evaluation.fetch_data_for_evaluation import load_evaluation_data
 from sklearn.metrics.pairwise import cosine_similarity
 
 

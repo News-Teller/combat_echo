@@ -1,8 +1,8 @@
 import pandas as pd
 import time
-from news_diversification.src.evaluation.fetch_data_for_evaluation import load_evaluation_data
-from news_diversification.src.preprocessing.preprocessing_tfidf import TfidfPreprocessor
-from news_diversification.src.similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
+from evaluation.fetch_data_for_evaluation import load_evaluation_data
+from preprocessing.preprocessing_tfidf import TfidfPreprocessor
+from similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
 
 pd.set_option('display.max_columns', 500)
 

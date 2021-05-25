@@ -1,5 +1,5 @@
 from preprocessing.preprocessing import preprocess_target
-from news_diversification.src.similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
+from similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
 import pandas as pd
 
 from live_processing.pca_diversification import get_most_diverse_articles

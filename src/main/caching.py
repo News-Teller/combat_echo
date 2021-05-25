@@ -1,12 +1,12 @@
 from fetching import fetch
 from live_processing.media_filtering import cache_media_dict
 from preprocessing.preprocessing import preprocess_cached
-from news_diversification.src.preprocessing.preprocessing_bert import BertPreprocessor
-from news_diversification.src.preprocessing.preprocessing_fasttext import FasttextPreprocessor
+from preprocessing.preprocessing_bert import BertPreprocessor
+from preprocessing.preprocessing_fasttext import FasttextPreprocessor
 import logging
 import os
-from news_diversification.src.preprocessing.preprocessing_google_usc import GoogleUscPreprocessor
-from news_diversification.src.preprocessing.preprocessing_tfidf import TfidfPreprocessor
+from preprocessing.preprocessing_google_usc import GoogleUscPreprocessor
+from preprocessing.preprocessing_tfidf import TfidfPreprocessor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()

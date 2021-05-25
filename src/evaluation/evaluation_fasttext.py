@@ -1,8 +1,8 @@
 import pandas as pd
 
-from news_diversification.src.evaluation.fetch_data_for_evaluation import load_evaluation_data
-from news_diversification.src.preprocessing.preprocessing_fasttext import FasttextPreprocessor
-from news_diversification.src.similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
+from evaluation.fetch_data_for_evaluation import load_evaluation_data
+from preprocessing.preprocessing_fasttext import FasttextPreprocessor
+from similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
 
 
 def get_fasttext_accuracy(df, url_mapping):

@@ -1,8 +1,8 @@
 import pandas as pd
 
-from news_diversification.src.evaluation.fetch_data_for_evaluation import load_evaluation_data
-from news_diversification.src.preprocessing.preprocessing_bert import BertPreprocessor
-from news_diversification.src.similarity_calculation.similarity_calculation_bert import SimilarityTransformer
+from evaluation.fetch_data_for_evaluation import load_evaluation_data
+from preprocessing.preprocessing_bert import BertPreprocessor
+from similarity_calculation.similarity_calculation_bert import SimilarityTransformer
 
 
 def get_bert_accuracy(df, url_mapping):

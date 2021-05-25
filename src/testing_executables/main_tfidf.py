@@ -1,9 +1,9 @@
 from preprocessing.preprocessing import preprocess_target_bert, clean_text, \
     remove_spaces
-from news_diversification.src.preprocessing.preprocessing_tfidf import TfidfPreprocessor
+from preprocessing.preprocessing_tfidf import TfidfPreprocessor
 import pandas as pd
 
-from news_diversification.src.similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
+from similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
 
 pd.set_option('display.max_columns', 500)
 
