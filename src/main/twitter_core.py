@@ -5,6 +5,7 @@ import pandas as pd
 import os
 
 from live_processing.media_filtering import perform_media_filtering, clean_domain
+from main.cuttly_connector import CuttlyConnector
 from similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
 from similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
 from live_processing.pca_diversification import get_most_diverse_articles
@@ -15,6 +16,7 @@ from preprocessing.preprocessing import CLEANED_DATA_PATH
 from similarity_calculation.similarity_calculation_spacy import get_most_similar
 from similarity_calculation.similarity_calculation_bert import SimilarityTransformer
 from similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -152,14 +154,16 @@ def filter_out_irrelevant_urls(urls):
 def prepare_status(tweet, similar_urls):
     # old = f"Hey @{tweet.user.screen_name} here are some articles, similar to yours: \n" + "\n".join(similar_urls)
 
+    cuttly_connector = CuttlyConnector()
+
     status = f"""
     Hey @{tweet.user.screen_name}:    
     
                             url |   medium bias  |   medium reliability
                             
-    1) {similar_urls[0][0]} 	| 	{similar_urls[0][1]} 	| 	{similar_urls[0][2]}
-    2) {similar_urls[1][0]} 	| 	{similar_urls[1][1]} 	| 	{similar_urls[1][2]}
-    3) {similar_urls[2][0]} 	| 	{similar_urls[2][1]} 	| 	{similar_urls[2][2]}
+    1) {cuttly_connector.shorten_link(similar_urls[0][0])} 	| 	{similar_urls[0][1]} 	| 	{similar_urls[0][2]}
+    2) {cuttly_connector.shorten_link(similar_urls[1][0])} 	| 	{similar_urls[1][1]} 	| 	{similar_urls[1][2]}
+    3) {cuttly_connector.shorten_link(similar_urls[2][0])} 	| 	{similar_urls[2][1]} 	| 	{similar_urls[2][2]}
     """
 
     return status
@@ -170,14 +174,18 @@ def reply_to_user(similar_urls, api, tweet):
         if not tweet.user.following:
             tweet.user.follow()
     if len(similar_urls) == 0:
-        status = f"Hmmmm @{tweet.user.screen_name} it seems like you have found my weakness, not sure how to process this tweet"
+        status = f"""
+        Hmmmm @{tweet.user.screen_name} it seems like you have found my weakness.
+         
+        Right now, meaning {datetime.today().strftime('%d-%m-%Y-%H:%M:%S')}, I am not sure how to process this tweet
+        """
     else:
         status = prepare_status(tweet, similar_urls)
-    print(status)
-    # api.update_status(
-    #     status=status,
-    #     in_reply_to_status_id=tweet.id,
-    # )
+    # print(status)
+    api.update_status(
+        status=status,
+        in_reply_to_status_id=tweet.id,
+    )
 
 
 def check_mentions(api, since_id, model="google_usc"):
@@ -212,14 +220,15 @@ def check_mentions(api, since_id, model="google_usc"):
             else:
                 logger.info("Processing urls...")
                 similar_urls = process_urls(urls, model=model)
-            logger.info("Replying to user...")
         except Exception as e:
             logger.error(f"Exception happened while processing urls : {e}")
             similar_urls = []
+        logger.info("Replying to user...")
         try:
             reply_to_user(similar_urls, api, tweet)
-        except tweepy.error.TweepError:
-            logger.info("Posted duplicate response...")
+        except tweepy.error.TweepError as e:
+            logger.info("Tweepy error")
+            logger.error(f"Exact error: {e}")
             pass
 
     return new_since_id
@@ -250,8 +259,8 @@ def main():
     connector = TwitterConnector()
     api = connector.get_api()
 
-    # since_id = find_last_reply(api)
-    since_id = 1396113294834950143
+    since_id = find_last_reply(api)
+    # since_id = 1396113294834950143
 
     while True:
         since_id = check_mentions(api, since_id, model="google_usc")

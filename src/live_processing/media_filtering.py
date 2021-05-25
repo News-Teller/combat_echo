@@ -31,14 +31,14 @@ def add_bias(url, media_dict):
     if url in media_dict:
         return media_dict[url][2]
     else:
-        return "unknown"
+        return "N/A"
 
 
 def add_fact(url, media_dict):
     if url in media_dict:
         return media_dict[url][1]
     else:
-        return "unknown"
+        return "N/A"
 
 
 def load_media():
