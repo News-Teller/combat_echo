@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from dateutil.parser import parse
-
 from ESClient.esclient import ElasticsearchClient
 
 

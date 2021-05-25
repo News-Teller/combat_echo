@@ -2,7 +2,7 @@ import tweepy
 
 
 class TwitterConnector:
-    SECRETS_PATH = "../secrets/twitter_keys.txt"
+    SECRETS_PATH = "../../secrets/twitter_keys.txt"
 
     def __init__(self):
         keys = self.__read_secrets()
@@ -20,7 +20,7 @@ class TwitterConnector:
         auth = tweepy.OAuthHandler(keys["api_key"], keys["api_key_secret"])
         auth.set_access_token(keys["access_token"], keys["access_token_secret"])
 
-        return tweepy.API(auth)
+        return tweepy.API(auth, wait_on_rate_limit=True)
 
     def get_api(self):
         return self.api

@@ -9,7 +9,7 @@ warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 NLP = spacy.load("en_core_web_lg")
-CLEANED_DATA_PATH = "../resources/cleaned_data.csv"
+CLEANED_DATA_PATH = "../../resources/cleaned_data.csv"
 
 
 def filter_df(df, columns_to_keep=("text", "title")):
@@ -17,8 +17,8 @@ def filter_df(df, columns_to_keep=("text", "title")):
 
 
 def get_title_and_leading_paragraph_from_url(url):
-    article = NewsPlease.from_url(url)
-    if article.title is None or article.description is None:
+    article = NewsPlease.from_url(url, timeout=6)
+    if article.title is None or article.description is None or article.maintext is None:
         return None
     maintext = article.maintext
     cleaned = get_paragraphs_nlp(maintext)
@@ -33,7 +33,7 @@ def get_paragraphs_efficient(full_text, length=150):
         return full_text
 
 
-def get_paragraphs_nlp(full_text, count=5):
+def get_paragraphs_nlp(full_text, count=1):
     sentences = NLP(full_text)
 
     sentences = list(sentences.sents)
@@ -98,12 +98,16 @@ def preprocess_cached(df, embedding=True, cache=True):
 
     df["cleaned_important_text"] = df.cleaned_important_text.apply(remove_spaces)
 
+    df["important_text"] = df.important_text.apply(remove_spaces)
+
     if embedding:
         df["embedding"] = df.cleaned_important_text.apply(get_embedding)
         df = filter_df(df,
-                       ("url", "cleaned_important_text", "embedding", "publish_datetime", "polarity", "subjectivity"))
+                       ("url", "cleaned_important_text", "important_text", "embedding", "publish_datetime", "polarity",
+                        "subjectivity"))
     else:
-        df = filter_df(df, ("url", "cleaned_important_text", "publish_datetime", "polarity", "subjectivity"))
+        df = filter_df(df, (
+        "url", "cleaned_important_text", "important_text", "publish_datetime", "polarity", "subjectivity"))
 
     df.drop_duplicates("cleaned_important_text", inplace=True)
 
@@ -115,7 +119,18 @@ def preprocess_cached(df, embedding=True, cache=True):
 
 
 def preprocess_target(url):
-    target, publication_date = get_title_and_leading_paragraph_from_url(url)
-    if target is None:
+    tup = get_title_and_leading_paragraph_from_url(url)
+    if tup is not None:
+        target, publication_date = tup
+    else:
         return None
-    return clean_text(target), publication_date
+    return remove_spaces(clean_text(target)), publication_date
+
+
+def preprocess_target_bert(url):
+    tup = get_title_and_leading_paragraph_from_url(url)
+    if tup is not None:
+        target, publication_date = tup
+    else:
+        return None
+    return target, publication_date

@@ -5,14 +5,24 @@ from datetime import datetime
 
 
 class SimilarityTransformer:
-    __CLEANED_DATA_PATH_BERT = "../resources/cleaned_data_bert.csv"
-    __EMBEDDINGS_PATH = "../resources/embeddings.pt"
+    __CLEANED_DATA_PATH_BERT = "../../resources/cleaned_data_bert.csv"
+    __EMBEDDINGS_PATH = "../../resources/embeddings.pt"
 
-    def __init__(self, model_name="stsb-roberta-large"):
+    def __init__(self, model_name="stsb-roberta-large", data_path=None, embeddings_path=None):
         self.model = self.__load_model(model_name)
+
+        if data_path:
+            self.data_path = data_path
+        else:
+            self.data_path = self.__CLEANED_DATA_PATH_BERT
+        if embeddings_path:
+            self.embeddings_path = embeddings_path
+        else:
+            self.embeddings_path = self.__EMBEDDINGS_PATH
+
+        self.embeddings = torch.load(self.embeddings_path)
         self.data = self.__load_data_with_embeddings()
         self.target_emb = None
-        self.embeddings = torch.load(self.__EMBEDDINGS_PATH)
 
     @staticmethod
     def __load_model(model_name="stsb-roberta-large"):
@@ -35,9 +45,12 @@ class SimilarityTransformer:
         self.target_emb = self.model.encode(target, convert_to_tensor=True)
 
     def __load_data_with_embeddings(self):
-        df = pd.read_csv(self.__CLEANED_DATA_PATH_BERT)
-        df["publish_datetime"] = df["publish_datetime"].apply(
-            lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%S.000Z'))
+        df = pd.read_csv(self.data_path)
+        df["bert_embedding"] = list(torch.chunk(self.embeddings, self.embeddings.shape[0], dim=0))
+        df["bert_embedding"] = df["bert_embedding"].apply(lambda x: x.numpy()[0])
+        # TODO figure out what to do with date
+        # df["publish_datetime"] = df["publish_datetime"].apply(
+        #     lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%S.000Z'))
         return df
 
     def __filter_similars(self, row, max_similarity, percent=0.2):
@@ -51,12 +64,11 @@ class SimilarityTransformer:
         self.__create_embeddings_target(str(target))
         self.__calculate_similarities()
 
-        self.data.drop_duplicates("similarities", inplace=True)
-        self.data.sort_values(by='similarities', ascending=False, inplace=True)
+        # self.data.drop_duplicates("similarities", inplace=True)
+        copy = self.data.sort_values(by='similarities', ascending=False)
 
-        # max_similarity = self.data.iloc[0].similarities
-        # print("Before", len(self.data))
-        # self.data = self.data.apply(lambda row: self.__filter_similars(row, max_similarity), axis=1).dropna()
-        # print("After", len(self.data))
+        copy = copy[copy["important_text"] != target]
 
-        return self.data.head(100)
+        copy.reset_index(drop=True, inplace=True)
+
+        return copy.head(num)
