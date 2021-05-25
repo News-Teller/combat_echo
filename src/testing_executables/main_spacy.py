@@ -1,11 +1,10 @@
-from news_diversification.src.main.result_ordering import divide_by_polarity_and_subjectivity
 from news_diversification.src.similarity_calculation.similarity_calculation_spacy import get_most_similar
 from preprocessing.preprocessing import preprocess_target
 from preprocessing.preprocessing import get_embedding
 
 import pandas as pd
 
-from similarity_calculation.pca_diversification import get_most_diverse_articles
+from live_processing.pca_diversification import get_most_diverse_articles
 
 CLEANED_DATA_PATH = "../../resources/cleaned_data.csv"
 

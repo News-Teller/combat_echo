@@ -4,12 +4,13 @@ import time
 import pandas as pd
 import os
 
+from live_processing.media_filtering import perform_media_filtering, clean_domain
 from news_diversification.src.main.result_ordering import divide_by_polarity_and_subjectivity
 from news_diversification.src.similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
 from news_diversification.src.similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
-from similarity_calculation.pca_diversification import get_most_diverse_articles
+from live_processing.pca_diversification import get_most_diverse_articles
 from twitter_connector import TwitterConnector
-from preprocessing.preprocessing import preprocess_target, preprocess_target_bert, clean_text, remove_spaces
+from preprocessing.preprocessing import preprocess_target_bert, clean_text, remove_spaces
 from preprocessing.preprocessing import get_embedding
 from preprocessing.preprocessing import CLEANED_DATA_PATH
 from news_diversification.src.similarity_calculation.similarity_calculation_spacy import get_most_similar
@@ -25,9 +26,17 @@ def process_urls_google_usc(url_clean):
 
     result = calculator.calculate_similarity_for_target(url_clean, threshold=0.1)
 
+    result = perform_media_filtering(result)
+
     result = get_most_diverse_articles(result)
 
-    result = result.url.tolist()
+    url = result.url.tolist()
+
+    bias = result.bias.tolist()
+
+    fact = result.fact.tolist()
+
+    result = list(zip(url, fact, bias))
 
     return result
 
@@ -112,9 +121,7 @@ def processing(text_clean, text=None, model="google_usc"):
 
 
 def process_text(text, model="google_usc"):
-    print(f"Text {text}")
     text_clean = clean_text(remove_spaces(text))
-    print(f"Text clean {text_clean}")
     result = processing(text_clean, model)
     result.reverse()
     return result
@@ -133,13 +140,35 @@ def process_urls(urls, filter_by=False, model="google_usc"):
                 if filter_by:
                     output = divide_by_polarity_and_subjectivity(result, publication_date, random=False)
                     output = format_output(output)
-                    # print("output:", output)
                     similar_urls.append(output)
-                    print("similar:\n", similar_urls)
                 else:
                     result.reverse()
                     similar_urls += result
     return similar_urls
+
+
+def filter_out_irrelevant_urls(urls):
+    if len(urls) != 0:
+        filtered = list(filter(lambda url_d: clean_domain(url_d["expanded_url"]) != "twitter.com", urls))
+        return filtered
+    else:
+        return urls
+
+
+def prepare_status(tweet, similar_urls):
+    # old = f"Hey @{tweet.user.screen_name} here are some articles, similar to yours: \n" + "\n".join(similar_urls)
+
+    status = f"""
+    Hey @{tweet.user.screen_name}:    
+    
+                            url |   medium bias  |   medium reliability
+                            
+    1) {similar_urls[0][0]} 	| 	{similar_urls[0][1]} 	| 	{similar_urls[0][2]}
+    2) {similar_urls[1][0]} 	| 	{similar_urls[1][1]} 	| 	{similar_urls[1][2]}
+    3) {similar_urls[2][0]} 	| 	{similar_urls[2][1]} 	| 	{similar_urls[2][2]}
+    """
+
+    return status
 
 
 def reply_to_user(similar_urls, api, tweet):
@@ -147,15 +176,14 @@ def reply_to_user(similar_urls, api, tweet):
         if not tweet.user.following:
             tweet.user.follow()
     if len(similar_urls) == 0:
-        status = f"Hmmmm @{tweet.user.screen_name} are you sure you provided a link to an article?"
-
+        status = f"Hmmmm @{tweet.user.screen_name} it seems like you have found my weakness, not sure how to process this tweet"
     else:
-        status = f"Hey @{tweet.user.screen_name} here are some articles, similar to yours: \n" + "\n".join(similar_urls)
+        status = prepare_status(tweet, similar_urls)
     print(status)
-    api.update_status(
-        status=status,
-        in_reply_to_status_id=tweet.id,
-    )
+    # api.update_status(
+    #     status=status,
+    #     in_reply_to_status_id=tweet.id,
+    # )
 
 
 def check_mentions(api, since_id, model="google_usc"):
@@ -171,24 +199,29 @@ def check_mentions(api, since_id, model="google_usc"):
         if tweet.in_reply_to_status_id is not None:  # I am mentioned in a reply
             print("I am mentioned in a reply")
             print("Current tweet : ")
-            print(tweet.text)
+            print(tweet)
             original_tweet = api.statuses_lookup([tweet.in_reply_to_status_id])[0]
             print("Original tweet : ")
-            print(original_tweet.text)
+            print(original_tweet)
             urls = original_tweet.entities["urls"]
         else:
             urls = tweet.entities["urls"]
-
-        if len(urls) == 0:
-            logger.info("Processing text...")
-            if original_tweet is not None:
-                similar_urls = process_text(original_tweet.text, model=model)
+        print("urls before filtering, ", urls)
+        urls = filter_out_irrelevant_urls(urls)
+        try:
+            if len(urls) == 0:
+                logger.info("Processing text...")
+                if original_tweet is not None:
+                    similar_urls = process_text(original_tweet.text, model=model)
+                else:
+                    similar_urls = process_text(tweet.text, model=model)
             else:
-                similar_urls = process_text(tweet.text, model=model)
-        else:
-            logger.info("Processing urls...")
-            similar_urls = process_urls(urls, model=model, filter_by=False)
-        logger.info("Replying to user...")
+                logger.info("Processing urls...")
+                similar_urls = process_urls(urls, model=model, filter_by=False)
+            logger.info("Replying to user...")
+        except Exception as e:
+            logger.error(f"Exception happened while processing urls : {e}")
+            similar_urls = []
         try:
             reply_to_user(similar_urls, api, tweet)
         except tweepy.error.TweepError:
@@ -223,7 +256,8 @@ def main():
     connector = TwitterConnector()
     api = connector.get_api()
 
-    since_id = find_last_reply(api)
+    # since_id = find_last_reply(api)
+    since_id = 1396113294834950143
 
     while True:
         since_id = check_mentions(api, since_id, model="google_usc")

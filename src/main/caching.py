@@ -1,4 +1,5 @@
 from fetching import fetch
+from live_processing.media_filtering import cache_media_dict
 from preprocessing.preprocessing import preprocess_cached
 from news_diversification.src.preprocessing.preprocessing_bert import BertPreprocessor
 from news_diversification.src.preprocessing.preprocessing_fasttext import FasttextPreprocessor
@@ -23,8 +24,8 @@ if __name__ == '__main__':
 
     logger.info("Starting caching pipeline")
 
-    from_ = '2021-04-25T00:00:00.000'
-    to_ =   '2021-05-02T23:59:00.000'
+    from_ = '2021-05-13T00:00:00.000'
+    to_ =   '2021-05-20T23:59:00.000'
 
     logger.info(f"Dates interval : from {from_} to {to_}")
 
@@ -44,6 +45,12 @@ if __name__ == '__main__':
     preprocessorGoogleUsc.calculate_embeddings_and_save()
 
     logger.info("Google USC preprocessing pipeline done")
+
+    logger.info("Caching media dictionary...")
+
+    cache_media_dict()
+
+    logger.info("Cached media dictionary")
 
     logger.info("Fasttext preprocessing pipeline begins")
 

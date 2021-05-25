@@ -1,6 +1,7 @@
-from preprocessing.preprocessing import preprocess_target_bert, preprocess_target, clean_text
+from live_processing.media_filtering import perform_media_filtering, cache_media_dict
+from preprocessing.preprocessing import preprocess_target
 from news_diversification.src.similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
-from similarity_calculation.pca_diversification import get_most_diverse_articles
+from live_processing.pca_diversification import get_most_diverse_articles
 
 import pandas as pd
 
@@ -20,9 +21,9 @@ def main(url):
 
     df = calculator.calculate_similarity_for_target(target_clean, threshold=0.1)
 
-    print(df.similarities)
+    filtered = perform_media_filtering(df)
 
-    result = get_most_diverse_articles(df)
+    result = get_most_diverse_articles(filtered)
 
     print(result.url.loc[0])
     print(result.url.loc[1])
@@ -31,6 +32,14 @@ def main(url):
     print(result.important_text.loc[0])
     print(result.important_text.loc[1])
     print(result.important_text.loc[2])
+
+    print(result.bias.loc[0])
+    print(result.bias.loc[1])
+    print(result.bias.loc[2])
+
+    print(result.fact.loc[0])
+    print(result.fact.loc[1])
+    print(result.fact.loc[2])
 
 
 if __name__ == '__main__':

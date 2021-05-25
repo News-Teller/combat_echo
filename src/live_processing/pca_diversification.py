@@ -52,7 +52,7 @@ def get_triangle_area_two_dim(tup):
 
 def get_most_diverse_articles(df, embedding_column="embedding"):
     emb = pd.DataFrame(df[embedding_column])
-    copy = pd.DataFrame(df[["url", "important_text", "cleaned_important_text"]])
+    copy = pd.DataFrame(df[["url", "important_text", "cleaned_important_text", "bias", "fact"]])
 
     df = emb[embedding_column].apply(pd.Series)
 

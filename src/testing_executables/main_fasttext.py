@@ -1,9 +1,8 @@
 from preprocessing.preprocessing import preprocess_target
-from news_diversification.src.main.result_ordering import divide_by_polarity_and_subjectivity
 from news_diversification.src.similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
 import pandas as pd
 
-from similarity_calculation.pca_diversification import get_most_diverse_articles
+from live_processing.pca_diversification import get_most_diverse_articles
 
 pd.set_option('display.max_columns', 500)
 
