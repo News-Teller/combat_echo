@@ -159,11 +159,11 @@ def prepare_status(tweet, similar_urls):
     status = f"""
     Hey @{tweet.user.screen_name}:    
     
-                            url |   medium bias  |   medium reliability
+                            url | medium bias | medium reliability
                             
-    1) {cuttly_connector.shorten_link(similar_urls[0][0])} 	| 	{similar_urls[0][1]} 	| 	{similar_urls[0][2]}
-    2) {cuttly_connector.shorten_link(similar_urls[1][0])} 	| 	{similar_urls[1][1]} 	| 	{similar_urls[1][2]}
-    3) {cuttly_connector.shorten_link(similar_urls[2][0])} 	| 	{similar_urls[2][1]} 	| 	{similar_urls[2][2]}
+    1) {cuttly_connector.shorten_link(similar_urls[0][0])} | {similar_urls[0][1]} | {similar_urls[0][2]}
+    2) {cuttly_connector.shorten_link(similar_urls[1][0])} | {similar_urls[1][1]} | {similar_urls[1][2]}
+    3) {cuttly_connector.shorten_link(similar_urls[2][0])} | {similar_urls[2][1]} | {similar_urls[2][2]}
     """
 
     return status

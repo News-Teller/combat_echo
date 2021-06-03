@@ -1,5 +1,5 @@
 import pandas as pd
-
+import time
 from evaluation.fetch_data_for_evaluation import load_evaluation_data
 from preprocessing.preprocessing_fasttext import FasttextPreprocessor
 from similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
@@ -66,4 +66,8 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.time()
     main()
+
+    end = time.time()
+    print(end - start)

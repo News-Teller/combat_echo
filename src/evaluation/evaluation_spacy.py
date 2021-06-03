@@ -2,7 +2,7 @@ from evaluation.fetch_data_for_evaluation import load_evaluation_data
 from similarity_calculation.similarity_calculation_spacy import get_most_similar
 import spacy
 import pandas as pd
-
+import time
 NLP = spacy.load("en_core_web_lg")
 
 
@@ -70,4 +70,8 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.time()
     main()
+
+    end = time.time()
+    print(end - start)

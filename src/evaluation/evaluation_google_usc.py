@@ -1,7 +1,7 @@
 import pandas as pd
 import tensorflow_hub as hub
 import numpy as np
-
+import time
 from evaluation.fetch_data_for_evaluation import load_evaluation_data
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -86,4 +86,8 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.time()
     main()
+
+    end = time.time()
+    print(end - start)

@@ -1,5 +1,5 @@
 import pandas as pd
-
+import time
 from evaluation.fetch_data_for_evaluation import load_evaluation_data
 from preprocessing.preprocessing_bert import BertPreprocessor
 from similarity_calculation.similarity_calculation_bert import SimilarityTransformer
@@ -63,4 +63,8 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.time()
     main()
+
+    end = time.time()
+    print(end - start)
