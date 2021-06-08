@@ -151,7 +151,8 @@ This folder contains scripts necessary to connect to the Twitter and Cuttly APIs
 - Navigate to the `src/main/` folder and run `python twitter_core.py`
 
 #### Deployment pipeline recommendation
-- Put a 
+- Put the caching script in a weekly crontab so that the article library is updated often.
+- The twitter bot script runs on an infinite loop so you only need to run it and restart it in case it crashes.
 
 
 ## FAQ
