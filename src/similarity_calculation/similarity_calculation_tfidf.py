@@ -106,9 +106,6 @@ class SimilarityTfidf:
         target_doc = self.NLP(target_clean)
         target_entities = [(X.text, X.label_) for X in target_doc.ents]
 
-        # print("doc", target_doc)
-        # print("ents", target_entities)
-
         for entity in target_entities:
             if entity in self.ner_dict:
                 matched_articles = self.ner_dict[entity]

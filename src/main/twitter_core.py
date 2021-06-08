@@ -199,16 +199,10 @@ def check_mentions(api, since_id, model="google_usc"):
         original_tweet = None
 
         if tweet.in_reply_to_status_id is not None:  # I am mentioned in a reply
-            print("I am mentioned in a reply")
-            print("Current tweet : ")
-            print(tweet)
             original_tweet = api.statuses_lookup([tweet.in_reply_to_status_id])[0]
-            print("Original tweet : ")
-            print(original_tweet)
             urls = original_tweet.entities["urls"]
         else:
             urls = tweet.entities["urls"]
-        print("urls before filtering, ", urls)
         urls = filter_out_irrelevant_urls(urls)
         try:
             if len(urls) == 0:

@@ -35,14 +35,10 @@ class SimilarityFasttext:
 
     @staticmethod
     def cosine_similarity(x, y):
-        # return distance.cosine(x, y)
         x = x.reshape(1, -1)
         y = y.reshape(1, -1)
 
-        # print("similarity is", cosine_similarity(x, y))
-
         return cosine_similarity(x, y)[0][0]
-        # return np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
 
     def get_mean_embedding(self, text):
         emb = np.mean([self.model.get_word_vector(word) for word in text.split()], axis=0)

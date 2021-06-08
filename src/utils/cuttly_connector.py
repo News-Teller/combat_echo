@@ -26,15 +26,3 @@ class CuttlyConnector:
             return short_link
         else:
             return None
-
-
-def main():
-    c = CuttlyConnector()
-
-    link = c.shorten_link("dafdas")
-
-    print(link)
-
-
-if __name__ == '__main__':
-    main()

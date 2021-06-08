@@ -61,8 +61,6 @@ def get_most_diverse_articles(df, embedding_column="embedding"):
 
     principalDf = pd.DataFrame(principalComponents)
 
-    print(f"Went from 512 dimensions to {principalDf.shape[1]}")
-
     l = []
     for i in range(principalDf.shape[0]):
         temp = []
