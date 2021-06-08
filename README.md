@@ -90,18 +90,96 @@ So in order to evaluate how well our various models choose the most similar arti
 
 ## Folder structure 
 
+### Resources Folder
 
+This folder is used by the caching pipeline and by all the different models in order to store all the information they need. It should not appear on Github.
+
+### Secrets Folder
+
+This folder contains the API keys for Twitter and Cutly, it should not appear on Github.
+
+### Src Folder
+
+#### ESClient Subfolder
+
+This folder contains the necessary scripts to connect to the ElasticSearch instance and fetch the articles.
+
+#### Evaluation Subfolder
+
+This folder contains the evaluation component, splitted in one script per model
+
+#### Live processing Subfolder
+
+This folder contains the live processing component, that's responsible for diversifying the articles that are presented as output to the user.
+
+#### Main Subfolder
+
+This folder contains the two executable scripts, one that performs the preprocessing pipeline and one that starts the twitter bot.
+
+#### Preprocessing Subfolder
+
+This folder contains the preprocessing component, split in one script per model.
+
+#### Similarity calculation Subfolder
+
+This folder contains the component that calculates the most similar articles to the provided one for each model.
+
+#### Testing executables Subfolder
+
+This folder contains some scripts used for debugging purposes that run the entire pipeline for each model.
+
+#### Utils Subfolder
+
+This folder contains scripts necessary to connect to the Twitter and Cuttly APIs and to the ElasticSearch instance.
 
 ## Installation
 
 - Add `export PYTHONPATH="${PYTHONPATH}:/path/to/src"` to your .barshrc or .zshrc file
+- Navigate into the project root and run `conda env create -f environment.yml`
+- **Important Note:** when creating the conda environment, you will probably need to modify the prefix attribute on the `environment.yml` file
 
 ## How to:
 
 #### Evaluate a model
-- Navigate to the evaluation folder and run `python evaluate_MODEL_YOU_WANT_TO_EVALUATE.py`
+- Navigate to the `src/evaluation` folder and run `python evaluate_MODEL_YOU_WANT_TO_EVALUATE.py`
 
-#### Fetch data from the ElasticSearch and run the preprocessing
-- Bla bla bla
+#### Fetch data from the ElasticSearch and run the preprocessing pipeline
+- Navigate to the `src/main/` folder and run `python caching.py`
 
-#### Deploy locally
+#### Run the twitter bot
+- First run the caching pipeline as described above
+- Navigate to the `src/main/` folder and run `python twitter_core.py`
+
+
+## FAQ
+
+#### I have an error when importing a local module
+
+Make sure that you have added `export PYTHONPATH="${PYTHONPATH}:/path/to/src"` to your .barshrc or .zshrc file
+
+#### I have an ModuleNotFoundError for a library
+
+Make sure that you have imported the conda environment properly from the provided `environment.yml` file as described in the installation section and that it is activated.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5,11 +5,11 @@ import pandas as pd
 import os
 
 from live_processing.media_filtering import perform_media_filtering, clean_domain
-from main.cuttly_connector import CuttlyConnector
+from utils.cuttly_connector import CuttlyConnector
 from similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
 from similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
 from live_processing.pca_diversification import get_most_diverse_articles
-from twitter_connector import TwitterConnector
+from utils.twitter_connector import TwitterConnector
 from preprocessing.preprocessing import preprocess_target_bert, clean_text, remove_spaces
 from preprocessing.preprocessing import get_embedding
 from preprocessing.preprocessing import CLEANED_DATA_PATH
