@@ -152,7 +152,6 @@ def filter_out_irrelevant_urls(urls):
 
 
 def prepare_status(tweet, similar_urls):
-    # old = f"Hey @{tweet.user.screen_name} here are some articles, similar to yours: \n" + "\n".join(similar_urls)
 
     cuttly_connector = CuttlyConnector()
 
@@ -176,7 +175,6 @@ def reply_to_user(similar_urls, api, tweet):
     if len(similar_urls) == 0:
         status = f"""
         Hmmmm @{tweet.user.screen_name} it seems like you have found my weakness.
-         
         Right now, meaning {datetime.today().strftime('%d-%m-%Y-%H:%M:%S')}, I am not sure how to process this tweet
         """
     else:
@@ -254,7 +252,7 @@ def main():
     api = connector.get_api()
 
     since_id = find_last_reply(api)
-    # since_id = 1396113294834950143
+    # since_id = 1402232227711365121
 
     while True:
         since_id = check_mentions(api, since_id, model="google_usc")

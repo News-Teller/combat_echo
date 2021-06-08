@@ -18,10 +18,24 @@ def filter_df(df, columns_to_keep=("text", "title")):
 
 def get_title_and_leading_paragraph_from_url(url):
     article = NewsPlease.from_url(url, timeout=6)
-    if article.title is None or article.description is None or article.maintext is None:
+
+    if article.maintext is None:
         return None
+
     maintext = article.maintext
     cleaned = get_paragraphs_nlp(maintext)
+
+    if article.description is None:
+        if article.title is None:
+            return cleaned, article.date_publish
+        else:
+            return article.title + " " + cleaned, article.date_publish
+
+    if article.title is None:
+        if article.description is None:
+            return cleaned, article.date_publish
+        else:
+            return article.description + " " + cleaned, article.date_publish
 
     return article.title + " " + article.description + " " + cleaned, article.date_publish
 

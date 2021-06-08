@@ -150,6 +150,9 @@ This folder contains scripts necessary to connect to the Twitter and Cuttly APIs
 - First run the caching pipeline as described above
 - Navigate to the `src/main/` folder and run `python twitter_core.py`
 
+#### Deployment pipeline recommendation
+- Put a 
+
 
 ## FAQ
 
