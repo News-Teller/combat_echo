@@ -4,18 +4,18 @@ import time
 import pandas as pd
 import os
 
-from live_processing.media_filtering import perform_media_filtering, clean_domain
-from utils.cuttly_connector import CuttlyConnector
-from similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
-from similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
-from live_processing.pca_diversification import get_most_diverse_articles
-from utils.twitter_connector import TwitterConnector
-from preprocessing.preprocessing import preprocess_target_bert, clean_text, remove_spaces
-from preprocessing.preprocessing import get_embedding
-from preprocessing.preprocessing import CLEANED_DATA_PATH
-from similarity_calculation.similarity_calculation_spacy import get_most_similar
-from similarity_calculation.similarity_calculation_bert import SimilarityTransformer
-from similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
+from src.live_processing.media_filtering import perform_media_filtering, clean_domain
+from src.utils.cuttly_connector import CuttlyConnector
+from src.similarity_calculation.similarity_calculation_google_usc import SimilarityGoogleUsc
+from src.similarity_calculation.similarity_calculation_tfidf import SimilarityTfidf
+from src.live_processing.pca_diversification import get_most_diverse_articles
+from src.utils.twitter_connector import TwitterConnector
+from src.preprocessing.preprocessing import preprocess_target_bert, clean_text, remove_spaces
+from src.preprocessing.preprocessing import get_embedding
+from src.preprocessing.preprocessing import CLEANED_DATA_PATH
+from src.similarity_calculation.similarity_calculation_spacy import get_most_similar
+from src.similarity_calculation.similarity_calculation_bert import SimilarityTransformer
+from src.similarity_calculation.similarity_calculation_fasttext import SimilarityFasttext
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
