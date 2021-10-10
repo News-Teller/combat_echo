@@ -20,13 +20,15 @@ def main(url):
 
     result = calculator.calculate_similarity_for_target(target_clean)
 
+    print(result.iloc[0])
 
-
-    print(result.url.iloc[0], result.important_text.iloc[0])
-    print(result.url.iloc[1], result.important_text.iloc[1])
-    print(result.url.iloc[2], result.important_text.iloc[2])
-    print(result.url.iloc[3], result.important_text.iloc[3])
-    print(result.url.iloc[4], result.important_text.iloc[4])
+    #
+    #
+    # print(result.url.iloc[0], result.important_text.iloc[0])
+    # print(result.url.iloc[1], result.important_text.iloc[1])
+    # print(result.url.iloc[2], result.important_text.iloc[2])
+    # print(result.url.iloc[3], result.important_text.iloc[3])
+    # print(result.url.iloc[4], result.important_text.iloc[4])
 
 
 if __name__ == '__main__':

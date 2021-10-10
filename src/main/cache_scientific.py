@@ -27,7 +27,7 @@ if __name__ == '__main__':
     df = pd.read_csv(SCIENTIFIC_DATA_PATH)
     df = df[["source_x", "title", "doi", "abstract", "publish_time", "authors", "journal", "url"]]
 
-    df = preprocess_scientific_cached(df)
+    df = preprocess_scientific_cached(df, from_date="2021-08-01")
 
     logger.info("Google USC preprocessing pipeline for scientific data begins")
 

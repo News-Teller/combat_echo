@@ -2,7 +2,7 @@ import spacy
 import logging
 from pandas.core.common import SettingWithCopyWarning
 import warnings
-
+import pandas as pd
 from src.preprocessing.preprocessing import clean_text, remove_spaces
 
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
@@ -35,8 +35,14 @@ def get_title_and_abstract(row):
     return merged
 
 
-def preprocess_scientific_cached(df, cache=True):
+def preprocess_scientific_cached(df, from_date=None, cache=True):
     df.dropna(inplace=True)
+
+    if from_date:
+        df["publish_time"] = pd.to_datetime(df["publish_time"], format='%Y-%m-%d')
+        df = df[df["publish_time"] > from_date]
+
+    logger.info(f"Processing {len(df)} records...")
 
     logger.info("Parsing important text...")
 

@@ -21,6 +21,33 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
+TRACKING_HASHTAG = "#covid"
+SCIENTIFIC_GOOGLE_EMBEDDINGS = "../../resources/scientific_cleaned_google_usc.pickle"
+
+
+def process_scientific_urls_google_usc(url_clean):
+    calculator = SimilarityGoogleUsc(data_path=SCIENTIFIC_GOOGLE_EMBEDDINGS)
+
+    result = calculator.calculate_similarity_for_target(url_clean, threshold=0.1)
+
+    # TODO think about if I need to call get_most_diverse_articles, format the output properly
+
+    # result = perform_media_filtering(result)
+    if len(result) > 3:
+        result = result.head(3)
+
+    # result = get_most_diverse_articles(result)
+
+    url = result.url.tolist()
+
+    doi = result.doi.tolist()
+
+    source = result.source_x.tolist()
+
+    result = list(zip(url, source, doi))
+
+    return result
+
 
 def process_urls_google_usc(url_clean):
     calculator = SimilarityGoogleUsc()
@@ -102,8 +129,11 @@ def format_output(output):
     return res
 
 
-def processing(text_clean, text=None, model="google_usc"):
-    if model == "fasttext":
+def processing(text_clean, text=None, model="google_usc", scientific=False):
+    if scientific:
+        logger.info("Using scientific google usc")
+        result = process_scientific_urls_google_usc(text_clean)
+    elif model == "fasttext":
         logger.info("Using fasttext")
         result = process_urls_fasttext(text_clean)
     elif model == "bert":
@@ -121,14 +151,14 @@ def processing(text_clean, text=None, model="google_usc"):
     return result
 
 
-def process_text(text, model="google_usc"):
+def process_text(text, model="google_usc", scientific=False):
     text_clean = clean_text(remove_spaces(text))
-    result = processing(text_clean, model)
+    result = processing(text_clean, model, scientific=scientific)
     result.reverse()
     return result
 
 
-def process_urls(urls, model="google_usc"):
+def process_urls(urls, model="google_usc", scientific=False):
     similar_urls = []
 
     for url_d in urls:
@@ -137,7 +167,7 @@ def process_urls(urls, model="google_usc"):
         if url is not None:
             url_clean = clean_text(remove_spaces(url))
             if url_clean is not None:
-                result = processing(url_clean, url, model=model)
+                result = processing(url_clean, url, model=model, scientific=scientific)
                 result.reverse()
                 similar_urls += result
     return similar_urls
@@ -151,24 +181,27 @@ def filter_out_irrelevant_urls(urls):
         return urls
 
 
-def prepare_status(tweet, similar_urls):
-
+def prepare_status(tweet, similar_urls, scientific=False):
     cuttly_connector = CuttlyConnector()
 
-    status = f"""
-    Hey @{tweet.user.screen_name}:    
-    
-                            url | medium bias | medium reliability
-                            
-    1) {cuttly_connector.shorten_link(similar_urls[0][0])} | {similar_urls[0][1]} | {similar_urls[0][2]}
-    2) {cuttly_connector.shorten_link(similar_urls[1][0])} | {similar_urls[1][1]} | {similar_urls[1][2]}
-    3) {cuttly_connector.shorten_link(similar_urls[2][0])} | {similar_urls[2][1]} | {similar_urls[2][2]}
-    """
+    attributes = ("url", "medium bias", "medium reliability")
 
+    if scientific:
+        attributes = ("url", "source", "doi")
+
+    status = f"""
+        Hey @{tweet.user.screen_name}:    
+
+                                {attributes[0]} | {attributes[1]} | {attributes[2]}
+
+        1) {cuttly_connector.shorten_link(similar_urls[0][0])} | {similar_urls[0][1]} | {similar_urls[0][2]}
+        2) {cuttly_connector.shorten_link(similar_urls[1][0])} | {similar_urls[1][1]} | {similar_urls[1][2]}
+        3) {cuttly_connector.shorten_link(similar_urls[2][0])} | {similar_urls[2][1]} | {similar_urls[2][2]}
+        """
     return status
 
 
-def reply_to_user(similar_urls, api, tweet):
+def reply_to_user(similar_urls, api, tweet, scientific=False):
     if api.me().id != tweet.user.id:
         if not tweet.user.following:
             tweet.user.follow()
@@ -178,7 +211,7 @@ def reply_to_user(similar_urls, api, tweet):
         Right now, meaning {datetime.today().strftime('%d-%m-%Y-%H:%M:%S')}, I am not sure how to process this tweet
         """
     else:
-        status = prepare_status(tweet, similar_urls)
+        status = prepare_status(tweet, similar_urls, scientific)
     # print(status)
     api.update_status(
         status=status,
@@ -202,22 +235,28 @@ def check_mentions(api, since_id, model="google_usc"):
         else:
             urls = tweet.entities["urls"]
         urls = filter_out_irrelevant_urls(urls)
+
+        if original_tweet is not None:
+            text_to_process = original_tweet.text
+        else:
+            text_to_process = tweet.text
+
+        scientific = TRACKING_HASHTAG in text_to_process
+
         try:
+
             if len(urls) == 0:
                 logger.info("Processing text...")
-                if original_tweet is not None:
-                    similar_urls = process_text(original_tweet.text, model=model)
-                else:
-                    similar_urls = process_text(tweet.text, model=model)
+                similar_urls = process_text(text_to_process, model=model, scientific=scientific)
             else:
                 logger.info("Processing urls...")
-                similar_urls = process_urls(urls, model=model)
+                similar_urls = process_urls(urls, model=model, scientific=scientific)
         except Exception as e:
             logger.error(f"Exception happened while processing urls : {e}")
             similar_urls = []
-        logger.info("Replying to user...")
         try:
-            reply_to_user(similar_urls, api, tweet)
+            logger.info("Replying to user...")
+            reply_to_user(similar_urls, api, tweet, scientific=scientific)
         except tweepy.error.TweepError as e:
             logger.info("Tweepy error")
             logger.error(f"Exact error: {e}")
@@ -252,7 +291,7 @@ def main():
     api = connector.get_api()
 
     since_id = find_last_reply(api)
-    # since_id = 1402232227711365121
+    # since_id = 1446819135422406655
 
     while True:
         since_id = check_mentions(api, since_id, model="google_usc")
