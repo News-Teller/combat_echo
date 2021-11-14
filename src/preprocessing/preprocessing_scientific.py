@@ -35,6 +35,18 @@ def get_title_and_abstract(row):
     return merged
 
 
+def get_single_url(row):
+    url = row.url
+
+    if len(url.split(" ")) > 1:
+        newUrl = row.url.split(" ")[0]
+        if newUrl.endswith(";"):
+            return newUrl[:-1]
+        else:
+            return newUrl
+    return row.url
+
+
 def preprocess_scientific_cached(df, from_date=None, cache=True):
     df.dropna(inplace=True)
 
@@ -58,6 +70,8 @@ def preprocess_scientific_cached(df, from_date=None, cache=True):
     df["important_text"] = df.important_text.apply(remove_spaces)
 
     df.drop_duplicates("cleaned_important_text", inplace=True)
+
+    df["url"] = df.apply(get_single_url, axis=1)
 
     logger.info("Done")
 
